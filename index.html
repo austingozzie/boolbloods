@@ -1,0 +1,2390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BMAs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --field:#6E1423; --field-dark:#4A0E18; --chalk:#FFFFFF; --gold:#E8DCC8; --navy:#2B0A10; --red:#C1272D;
+    --line:rgba(43,10,16,0.14); --bg:#FAF7F2; --surface:#FFFFFF; --surface-2:#F0E7DF; --text:#241012; --text-dim:#7A6367;
+    --shadow:0 1px 0 rgba(0,0,0,0.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){ --bg:#160607; --surface:#220C0F; --surface-2:#2E1216; --text:#F5EDE9; --text-dim:#B99095; --line:rgba(245,237,233,0.12); --shadow:0 1px 0 rgba(0,0,0,0.4); }
+  }
+  :root[data-theme="dark"]{ --bg:#160607; --surface:#220C0F; --surface-2:#2E1216; --text:#F5EDE9; --text-dim:#B99095; --line:rgba(245,237,233,0.12); --shadow:0 1px 0 rgba(0,0,0,0.4); }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  body{color:var(--text);font-family:'Source Sans 3',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.disp{font-family:'Barlow Condensed',system-ui,sans-serif;font-weight:700;letter-spacing:0.01em;}
+  #app{max-width:920px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+  .topbar{background:linear-gradient(180deg,var(--navy),#0A0D10);color:var(--chalk);padding:14px 16px 0 16px;position:sticky;top:0;z-index:20;}
+  .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:1;}
+  .brand{display:flex;align-items:baseline;gap:8px;}
+  .brand .mark{font-family:'Barlow Condensed';font-weight:800;font-size:22px;letter-spacing:0.02em;color:var(--gold);}
+  .brand .sub{font-size:12px;color:#9DA79E;}
+  /* ---------- Halloween theme (October) ---------- */
+  .theme-halloween .topbar{background:linear-gradient(180deg,#2C1B4D 0%,#1A1030 62%,#110B20 100%);
+    border-bottom:2px solid #FF7518;box-shadow:0 3px 14px rgba(255,117,24,0.35),0 1px 0 rgba(0,0,0,0.5);}
+  .theme-halloween .brand .mark{background:linear-gradient(90deg,#FFB347 0%,#FF7518 55%,#A855F7 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px rgba(255,117,24,0.35));}
+  .theme-halloween .brand .sub{color:#CFC6E4;}
+  .theme-halloween .user-chip{color:#F2EEFB;background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.28);}
+  .theme-halloween .tabs{background:rgba(12,7,24,0.62);margin:12px -16px 0 -16px;padding:0 16px;}
+  .theme-halloween .tab-btn{color:#BDB5D3;text-shadow:0 1px 2px rgba(0,0,0,0.8);}
+  .theme-halloween .tab-btn.active{color:#FFFFFF;}
+  /* ---------- Thanksgiving theme (November) ---------- */
+  .theme-thanksgiving .topbar{background:linear-gradient(180deg,#4F2D16 0%,#38210F 62%,#27170A 100%);
+    border-bottom:2px solid #E8A33D;box-shadow:0 3px 14px rgba(232,163,61,0.32),0 1px 0 rgba(0,0,0,0.5);}
+  .theme-thanksgiving .brand .sub{color:#EBD6B6;}
+  .theme-thanksgiving .user-chip{color:#FFF4E2;background:rgba(255,255,255,0.12);border-color:rgba(255,235,200,0.3);}
+  .theme-thanksgiving .tabs{background:rgba(26,13,4,0.6);margin:12px -16px 0 -16px;padding:0 16px;}
+  .theme-thanksgiving .tab-btn{color:#D9C3A0;text-shadow:0 1px 2px rgba(0,0,0,0.8);}
+  .theme-thanksgiving .tab-btn.active{color:#FFFFFF;}
+  .theme-thanksgiving .brand .mark{background:linear-gradient(90deg,#FFD27A 0%,#E8A33D 50%,#D4692F 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 6px rgba(232,163,61,0.35));}
+  .turkey-accent{display:inline-block;width:24px;height:22px;vertical-align:-4px;margin:0 2px;flex-shrink:0;}
+  .turkey-accent svg{width:100%;height:100%;display:block;overflow:visible;}
+  .falling-leaves{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+  .falling-leaf{position:absolute;top:-24px;width:13px;height:13px;opacity:0;animation:leaffall linear infinite;}
+  .falling-leaf svg{width:100%;height:100%;display:block;}
+  .falling-acorn{position:absolute;top:-24px;opacity:0;animation:leaffall linear infinite;}
+  .falling-acorn svg{width:100%;height:100%;display:block;}
+  @keyframes leaffall{0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:0;}8%{opacity:0.8;}92%{opacity:0.8;}100%{transform:translateY(135px) translateX(22px) rotate(320deg);opacity:0;}}
+  .thanks-fx{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+  /* One shared 32s cycle: turkey struts right→left (0–15s), pilgrim peeks from the left (15–17s),
+     squirrel dashes left→right (17.5–27s), pilgrim peeks from the right (27–30s). */
+  .tx-turkey{position:absolute;z-index:2;bottom:2px;left:100%;width:28px;height:26px;opacity:0.95;animation:turkeywalk 32s linear infinite;}
+  .tx-turkey .strut{display:block;width:100%;height:100%;transform-origin:50% 100%;animation:turkeystrut .7s ease-in-out infinite alternate;}
+  .tx-turkey svg,.tx-squirrel svg{width:100%;height:100%;display:block;overflow:visible;}
+  .tx-turkey .tleg{transform-box:fill-box;transform-origin:50% 0;animation:mummyleg .7s ease-in-out infinite alternate;}
+  .tx-turkey .tleg.r{animation-direction:alternate-reverse;}
+  .tx-squirrel{position:absolute;z-index:2;bottom:2px;left:-30px;width:24px;height:20px;opacity:0;animation:squirrelrun 32s linear infinite;}
+  .tx-squirrel .hop{display:block;width:100%;height:100%;animation:squirrelhop .32s ease-in-out infinite alternate;}
+  .tx-pilgrim{position:absolute;z-index:2;top:26px;width:36px;height:44px;opacity:0;}
+  .tx-pilgrim svg{width:100%;height:100%;display:block;overflow:visible;}
+  .tx-pilgrim.l{left:0;animation:pilgrimpeekL 32s ease-in-out infinite;}
+  .tx-pilgrim.r{right:0;animation:pilgrimpeekR 32s ease-in-out infinite;}
+  .tx-pilgrim.r svg{transform:scaleX(-1);}
+  .tx-pilgrim .pghead{animation:skeltilt 1.6s ease-in-out infinite alternate;}
+  @keyframes pilgrimpeekL{0%,47.2%{transform:translateX(-100%);opacity:0;}47.3%{transform:translateX(-100%);opacity:1;}50%,52%{transform:translateX(-40%);opacity:1;}54.2%{transform:translateX(-100%);opacity:1;}54.3%,100%{transform:translateX(-100%);opacity:0;}}
+  @keyframes pilgrimpeekR{0%,85.2%{transform:translateX(100%);opacity:0;}85.3%{transform:translateX(100%);opacity:1;}88%,92%{transform:translateX(40%);opacity:1;}94.5%{transform:translateX(100%);opacity:1;}94.6%,100%{transform:translateX(100%);opacity:0;}}
+  @keyframes turkeywalk{0%{left:100%;opacity:0.95;}46.9%{left:-40px;opacity:0.95;}47%,100%{left:-40px;opacity:0;}}
+  @keyframes turkeystrut{0%{transform:rotate(-3deg) translateY(0);}100%{transform:rotate(3deg) translateY(-1.5px);}}
+  @keyframes squirrelrun{0%,55%{left:-30px;opacity:0;}55.1%{left:-30px;opacity:0.95;}84.4%{left:100%;opacity:0.95;}84.5%,100%{left:100%;opacity:0;}}
+  @keyframes squirrelhop{0%{transform:translateY(0);}100%{transform:translateY(-4px);}}
+  .pumpkin-accent{display:inline-block;width:19px;height:19px;vertical-align:-3px;margin:0 2px;flex-shrink:0;}
+  .pumpkin-accent svg{width:100%;height:100%;display:block;overflow:visible;}
+  .pumpkin-face{animation:pumpkinflicker 2.6s infinite;}
+  @keyframes pumpkinflicker{0%,100%{opacity:1;}20%{opacity:0.7;}24%{opacity:1;}60%{opacity:0.85;}64%{opacity:1;}}
+  .halloween-fx{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}
+  .hx-ghost{position:absolute;left:-30px;width:16px;height:19px;opacity:0.4;animation:ghostdrift linear infinite;}
+  .hx-ghost.rev{animation-direction:reverse;}
+  .hx-ghost.rev svg{transform:scaleX(-1);}
+  .hx-ghost .bob{display:block;width:100%;height:100%;animation:ghostbob 2.4s ease-in-out infinite alternate;}
+  .hx-ghost svg{width:100%;height:100%;display:block;}
+  @keyframes ghostdrift{0%{left:-30px;}100%{left:calc(100% + 30px);}}
+  @keyframes ghostbob{0%{transform:translateY(-5px);}100%{transform:translateY(5px);}}
+  /* One shared 32s cycle: mummy walks right→left (0–14s), skeleton peeks from the LEFT edge
+     (14.5–17.5s), witch flies left→right (18–26s), skeleton peeks from the RIGHT edge (26.5–29.5s). */
+  .hx-mummy{position:absolute;bottom:3px;left:100%;width:20px;height:28px;opacity:0.9;animation:mummywalk 32s linear infinite;}
+  .hx-mummy .waddle{display:block;width:100%;height:100%;transform-origin:50% 100%;animation:mummywaddle 1.1s ease-in-out infinite alternate;}
+  .hx-mummy svg{width:100%;height:100%;display:block;overflow:visible;}
+  .hx-mummy .mleg{transform-box:fill-box;transform-origin:50% 0;animation:mummyleg 1.1s ease-in-out infinite alternate;}
+  .hx-mummy .mleg.r{animation-direction:alternate-reverse;}
+  @keyframes mummywalk{0%{left:100%;opacity:0.9;}43.75%{left:-30px;opacity:0.9;}43.8%,100%{left:-30px;opacity:0;}}
+  @keyframes mummywaddle{0%{transform:rotate(-4deg) translateY(0);}100%{transform:rotate(4deg) translateY(-1px);}}
+  @keyframes mummyleg{0%{transform:rotate(-14deg);}100%{transform:rotate(14deg);}}
+  .hx-witch{position:absolute;top:2px;left:-60px;width:46px;height:34px;opacity:0;animation:witchfly 32s linear infinite;}
+  .hx-witch .bob{display:block;width:100%;height:100%;animation:witchbob 1.6s ease-in-out infinite alternate;}
+  .hx-witch svg{width:100%;height:100%;display:block;overflow:visible;}
+  @keyframes witchfly{0%,56.2%{left:-60px;opacity:0;}56.3%{left:-60px;opacity:1;}81.25%{left:calc(100% + 10px);opacity:1;}81.3%,100%{left:calc(100% + 10px);opacity:0;}}
+  @keyframes witchbob{0%{transform:translateY(-3px) rotate(-3deg);}100%{transform:translateY(4px) rotate(3deg);}}
+  .hx-skel{position:absolute;top:28px;width:36px;height:40px;opacity:0;}
+  .hx-skel svg{width:100%;height:100%;display:block;overflow:visible;}
+  .hx-skel.l{left:0;animation:skelpeekL 32s ease-in-out infinite;}
+  .hx-skel.r{right:0;animation:skelpeekR 32s ease-in-out infinite;}
+  .hx-skel.r svg{transform:scaleX(-1);}
+  .hx-skel .tilt{display:block;width:100%;height:100%;}
+  .hx-skel .skhead{animation:skeltilt 1.3s ease-in-out infinite alternate;}
+  .hx-skel .eye{animation:skelglow 1.3s ease-in-out infinite alternate;}
+  @keyframes skelpeekL{0%,45.2%{transform:translateX(-100%);opacity:0;}45.3%{transform:translateX(-100%);opacity:1;}48.5%,51.5%{transform:translateX(-40%);opacity:1;}54.6%{transform:translateX(-100%);opacity:1;}54.7%,100%{transform:translateX(-100%);opacity:0;}}
+  @keyframes skelpeekR{0%,82.7%{transform:translateX(100%);opacity:0;}82.8%{transform:translateX(100%);opacity:1;}86%,89%{transform:translateX(40%);opacity:1;}92.1%{transform:translateX(100%);opacity:1;}92.2%,100%{transform:translateX(100%);opacity:0;}}
+  @keyframes skeltilt{0%{transform:rotate(-5deg);}100%{transform:rotate(6deg);}}
+  @keyframes skelglow{0%{opacity:0.55;}100%{opacity:1;}}
+  @media (prefers-reduced-motion: reduce){ .halloween-fx,.falling-leaves,.thanks-fx{display:none;} .pumpkin-face{animation:none;} }
+  .user-chip{font-size:13px;color:#C9CFC7;background:rgba(255,255,255,0.06);padding:6px 10px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);cursor:pointer;}
+  .tabs{display:flex;gap:2px;overflow-x:auto;margin-top:12px;scrollbar-width:none;position:relative;z-index:1;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab-btn{background:none;border:none;color:#8B958C;font-family:'Barlow Condensed';font-size:16px;font-weight:600;padding:10px 12px;white-space:nowrap;cursor:pointer;border-bottom:3px solid transparent;}
+  .tab-btn.active{color:var(--chalk);border-bottom-color:var(--gold);}
+  .tab-btn:hover{color:var(--chalk);}
+  main{flex:1;padding:16px 16px 60px 16px;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .card-title{font-size:20px;margin:0 0 4px 0;}
+  .card-sub{font-size:13px;color:var(--text-dim);margin:0 0 14px 0;}
+  .yard-divider{border:none;border-top:1px dashed var(--line);margin:14px 0;}
+  button{font-family:inherit;cursor:pointer;}
+  .btn{background:var(--field);color:var(--chalk);border:none;border-radius:3px;padding:10px 16px;font-size:14px;font-weight:600;font-family:'Source Sans 3';}
+  .btn:hover{background:var(--field-dark);}
+  .btn.gold{background:var(--gold);color:#231A02;}
+  .btn.gold:hover{filter:brightness(0.95);}
+  .btn.ghost{background:transparent;color:var(--field);border:1px solid var(--field);}
+  :root[data-theme="dark"] .btn.ghost{color:var(--chalk);border-color:var(--line);}
+  @media (prefers-color-scheme:dark){ .btn.ghost{color:var(--chalk);border-color:var(--line);} }
+  .btn.danger{background:var(--red);color:#fff;}
+  .btn.sm{padding:6px 10px;font-size:12.5px;}
+  .btn:disabled{opacity:0.4;cursor:not-allowed;}
+  input,select,textarea{font-family:'Source Sans 3';font-size:15px;padding:9px 10px;border-radius:3px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);width:100%;}
+  label{font-size:12.5px;color:var(--text-dim);display:block;margin:10px 0 4px 0;}
+  .field{margin-bottom:2px;}
+  .row{display:flex;gap:10px;}
+  .row > *{flex:1;}
+  .error{color:var(--red);font-size:13px;margin-top:8px;}
+  .notice{background:var(--surface-2);border-left:3px solid var(--gold);padding:8px 12px;font-size:13px;border-radius:2px;margin-bottom:12px;color:var(--text-dim);}
+  .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+  .login-card{max-width:380px;width:100%;}
+  .login-tabs{display:flex;margin-bottom:16px;border-bottom:1px solid var(--line);}
+  .login-tab{flex:1;text-align:center;padding:10px;font-family:'Barlow Condensed';font-size:17px;font-weight:600;color:var(--text-dim);border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;}
+  .login-tab.active{color:var(--text);border-bottom-color:var(--gold);}
+  .game{border:1px solid var(--line);border-radius:4px;margin-bottom:10px;overflow:hidden;}
+  .game-head{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--surface-2);font-size:12px;color:var(--text-dim);}
+  .game-body{padding:12px;}
+  .matchup{display:flex;gap:8px;align-items:stretch;}
+  .team-btn{flex:1;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:3px;background:var(--surface);display:flex;flex-direction:column;gap:2px;}
+  .team-btn .name{font-family:'Barlow Condensed';font-weight:700;font-size:17px;}
+  .team-btn .spread{font-size:12.5px;color:var(--text-dim);}
+  .team-btn.selected{background:var(--field);border-color:var(--field);}
+  .team-btn.selected .name,.team-btn.selected .spread{color:var(--chalk);}
+  /* Your pick lost: light red instead of the green "selected" look */
+  .team-btn.selected.lost{background:#F6D0CC;border-color:#E39A93;}
+  .team-btn.selected.lost .name,.team-btn.selected.lost .spread{color:#5E1410;}
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]) .team-btn.selected.lost{background:rgba(179,38,30,0.30);border-color:rgba(226,110,100,0.55);}
+    :root:not([data-theme="light"]) .team-btn.selected.lost .name,:root:not([data-theme="light"]) .team-btn.selected.lost .spread{color:var(--text);}
+  }
+  :root[data-theme="dark"] .team-btn.selected.lost{background:rgba(179,38,30,0.30);border-color:rgba(226,110,100,0.55);}
+  :root[data-theme="dark"] .team-btn.selected.lost .name,:root[data-theme="dark"] .team-btn.selected.lost .spread{color:var(--text);}
+  .pts-badge{font-family:'Barlow Condensed';font-weight:700;font-size:13px;background:var(--navy);color:var(--gold);padding:3px 8px;border-radius:3px;}
+  .result-tag{font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:3px;text-transform:uppercase;letter-spacing:0.03em;}
+  .result-tag.win{background:#DCEEDF;color:#1B4332;}
+  .result-tag.loss{background:#F6DEDC;color:var(--red);}
+  .result-tag.push{background:var(--surface-2);color:var(--text-dim);}
+  .result-tag.nopick{background:var(--surface-2);color:var(--text-dim);}
+  .result-tag.locked-tag{background:var(--surface-2);color:var(--text-dim);border:1px solid var(--line);}
+  :root[data-theme="dark"] .result-tag.win{background:#173323;}
+  :root[data-theme="dark"] .result-tag.loss{background:#3A1613;}
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-family:'Barlow Condensed';font-size:13px;color:var(--text-dim);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line);}
+  td{padding:9px 8px;border-bottom:1px solid var(--line);}
+  tr.me{background:rgba(212,167,63,0.12);}
+  .rank{font-family:'Barlow Condensed';font-weight:700;font-size:16px;color:var(--text-dim);}
+  .pts-cell{font-family:'Barlow Condensed';font-weight:700;font-size:17px;}
+  .pts-cell.pos{color:var(--field);}
+  .pts-cell.neg{color:var(--red);}
+  .toggle-group{display:flex;gap:2px;margin-bottom:14px;background:var(--surface-2);border-radius:3px;padding:2px;width:fit-content;}
+  .toggle-group button{background:none;border:none;padding:7px 14px;font-family:'Barlow Condensed';font-weight:600;font-size:14px;color:var(--text-dim);border-radius:2px;}
+  .toggle-group button.active{background:var(--field);color:var(--chalk);}
+  .log-entry{border-bottom:1px solid var(--line);padding:10px 0;}
+  .log-entry:last-child{border-bottom:none;}
+  .log-ts{font-size:11.5px;color:var(--text-dim);}
+  .log-desc{font-size:14px;margin-top:2px;}
+  .empty{text-align:center;padding:40px 16px;color:var(--text-dim);}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block;animation:livepulse 1.1s ease-in-out infinite;}
+  @keyframes livepulse{0%,100%{opacity:1;}50%{opacity:0.25;}}
+  .empty .disp{font-size:22px;color:var(--text);margin-bottom:6px;}
+  ::selection{background:var(--gold);color:#231A02;}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  @media (max-width:480px){ .matchup{flex-direction:column;} .row{flex-direction:column;} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ====================== SUPABASE CONFIG ======================
+   Dedicated Supabase project for BMAs (a brand new project —
+   separate from Bool Bloods and the golf pool project). Run the
+   SQL block at the bottom of this file (in comments) once in this
+   project's SQL editor, then paste the project URL and anon key below. */
+const SB_URL = "https://bxdyimlivaeooctujsoh.supabase.co";
+const SB_KEY = "sb_publishable__W9AT5gqehiruvfbrs5MNg_Z63BIiSn";
+
+async function sb(path, opts={}){
+  const res = await fetch(SB_URL+path, {
+    ...opts,
+    headers: {
+      "apikey": SB_KEY, "Authorization": "Bearer "+SB_KEY, "Content-Type": "application/json",
+      "Prefer": opts.prefer || "", ...(opts.headers||{})
+    }
+  });
+  if(!res.ok){ console.error("Supabase error", res.status, await res.text().catch(()=>"")); throw new Error("Supabase request failed ("+res.status+")"); }
+  const txt = await res.text();
+  return txt ? JSON.parse(txt) : null;
+}
+
+const LEAGUE_ID = 1; // single-row config table
+
+// ---------- helpers ----------
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function esc(s){ return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtTs(ts){ const d = new Date(ts); return d.toLocaleDateString(undefined,{month:"short",day:"numeric"}) + " " + d.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}); }
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+function localGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function localSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function localDel(k){ try{ localStorage.removeItem(k); }catch(e){} }
+
+const SPORT_LABELS = {ncaaf:"NCAAF"};
+// ---------- Halloween theme pieces ----------
+const PUMPKIN_SVG = `<span class="pumpkin-accent"><svg viewBox="0 0 32 32" aria-hidden="true">
+  <path d="M15 8.5c0-2 .8-4.5 3-5.5l1.2 1.4c-1.6.9-2 2.6-2 4.1z" fill="#4A6B2A"/>
+  <ellipse cx="16" cy="19" rx="14" ry="11" fill="#E8661A"/>
+  <ellipse cx="16" cy="19" rx="8.5" ry="11" fill="#F27A22"/>
+  <ellipse cx="16" cy="19" rx="3.5" ry="11" fill="#F58A33"/>
+  <g class="pumpkin-face" fill="#FFD84D">
+    <path d="M8.5 17l3-4.5 3 4.5z"/><path d="M17.5 17l3-4.5 3 4.5z"/>
+    <path d="M15 20.5l1-2 1 2z"/>
+    <path d="M7.5 22c4 5.5 13 5.5 17 0l-2.6 1-1.4 2-1.6-1.8-1.4 2-1.4-2-1.6 1.8-1.4-2z"/>
+  </g></svg></span>`;
+const GHOST_SVG = `<svg viewBox="0 0 24 28" aria-hidden="true"><path d="M12 1.5C6.5 1.5 3 5.5 3 11v15l3-2.2 3 2.2 3-2.2 3 2.2 3-2.2 3 2.2V11c0-5.5-3.5-9.5-9-9.5z" fill="#F4F1FF"/><ellipse cx="9" cy="10.5" rx="1.5" ry="2.1" fill="#1B1230"/><ellipse cx="15" cy="10.5" rx="1.5" ry="2.1" fill="#1B1230"/><ellipse cx="12" cy="16" rx="1.6" ry="2" fill="#1B1230"/></svg>`;
+// Mummy faces left (walks right → left), arms stretched out in front.
+const MUMMY_SVG = `<svg viewBox="0 0 24 34" aria-hidden="true">
+  <g class="mleg l"><rect x="8" y="21.5" width="3.6" height="11.5" rx="1.6" fill="#D6CDB5"/></g>
+  <g class="mleg r"><rect x="12.4" y="21.5" width="3.6" height="11.5" rx="1.6" fill="#CFC5AB"/></g>
+  <rect x="7" y="11" width="10" height="12" rx="2.5" fill="#E8E1CF"/>
+  <path d="M7 14l10-1.5M7 17.5l10 1M7 20.5l10-1.5" stroke="#B9AF97" stroke-width="0.8"/>
+  <rect x="-1" y="12.2" width="9.5" height="3" rx="1.5" fill="#DDD5BF"/>
+  <rect x="0" y="15.6" width="8.5" height="3" rx="1.5" fill="#D6CDB5"/>
+  <path d="M17 14q4 4 1.8 8.5" stroke="#E8E1CF" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <rect x="7" y="1.5" width="10" height="10" rx="4.5" fill="#E8E1CF"/>
+  <path d="M7.3 4.5l9.4-1M7 8.8l10 .6" stroke="#B9AF97" stroke-width="0.8"/>
+  <circle cx="9.6" cy="6.6" r="1.1" fill="#E0442E"/><circle cx="13.6" cy="6.6" r="1.1" fill="#E0442E"/>
+</svg>`;
+// Witch faces right (flies left → right) on a broom, bristles trailing behind.
+const WITCH_SVG = `<svg viewBox="0 -6 48 38" aria-hidden="true">
+  <path d="M9 24.6L0 19.5l1.4 5.6L0 30.5z" fill="#D4A73F"/>
+  <line x1="7" y1="24.6" x2="45" y2="20" stroke="#8B5A2B" stroke-width="2" stroke-linecap="round"/>
+  <path d="M21 16q-9-2.5-12 4.5l10.5 2.5z" fill="#5B21B6"/>
+  <path d="M18.5 23.5L24.5 10l6 12.5z" fill="#6D28D9"/>
+  <path d="M27 14.5l7 6" stroke="#6D28D9" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M26 22.5l6.5 3 1.5-2" stroke="#2E1065" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="26.2" cy="8.8" r="3.2" fill="#7BC96F"/>
+  <path d="M29.1 8.6l3.2 1.2-3 .9z" fill="#7BC96F"/>
+  <path d="M22 6.4L19.5-4l9.5 10.4z" fill="#2E1065"/>
+  <ellipse cx="25.6" cy="6.3" rx="5.4" ry="1.3" fill="#2E1065"/>
+</svg>`;
+// Skeleton peeking around the page edge: skull + shoulder + a bony hand gripping the corner.
+// Drawn for the LEFT edge (hand on the edge at x=0, looking toward the page); the right side mirrors it.
+const SKELETON_PEEK_SVG = `<svg viewBox="0 0 36 40" aria-hidden="true">
+  <path d="M15 40c0-5 3-8.5 9-8.5s10 3.5 10 8.5z" fill="#E9E6D8"/>
+  <path d="M18 37.5l14-3M18 39.8l15-3" stroke="#9C9884" stroke-width="0.9" stroke-linecap="round"/>
+  <g class="skhead" style="transform-origin:26px 30px">
+    <path d="M16 15.5C16 9.5 19.5 5 25 5s9 4.5 9 10.5c0 2.8-1 4.7-2.4 5.9v3.5H18.4v-3.5C17 20.2 16 18.3 16 15.5z" fill="#F4F1E3"/>
+    <path d="M16.3 16.2c.4-3.6 2.2-6.7 5-8.1" stroke="#CFCAB3" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <ellipse cx="21.2" cy="15.2" rx="2.8" ry="3.2" fill="#15101F"/><ellipse cx="29" cy="15.2" rx="2.8" ry="3.2" fill="#15101F"/>
+    <ellipse class="eye" cx="21.8" cy="15.6" rx="1.1" ry="1.3" fill="#7CFFB2"/><ellipse class="eye" cx="29.6" cy="15.6" rx="1.1" ry="1.3" fill="#7CFFB2"/>
+    <path d="M25.2 18.8l-1.4 2.8h2.8z" fill="#15101F"/>
+    <rect x="19" y="22.5" width="13" height="4.4" rx="1.2" fill="#F4F1E3"/>
+    <path d="M21.9 22.7v4M24.9 22.7v4M27.9 22.7v4M30.3 22.7v4" stroke="#15101F" stroke-width="0.8"/>
+  </g>
+  <path d="M6 40c1-6 3-9 7-11" stroke="#E9E6D8" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <g fill="#F4F1E3"><rect x="10.2" y="22.5" width="2.2" height="7.5" rx="1.1"/><rect x="12.9" y="21.2" width="2.2" height="8.5" rx="1.1"/><rect x="15.6" y="22" width="2.1" height="7.5" rx="1.05"/><rect x="8.2" y="25.2" width="2.1" height="5" rx="1.05" transform="rotate(-18 9 27)"/></g>
+  <ellipse cx="13" cy="30.5" rx="4.6" ry="3" fill="#E9E6D8"/>
+</svg>`;
+const HALLOWEEN_GHOSTS = [
+  {top:6,  dur:19, delay:-3,  rev:false},
+  {top:38, dur:24, delay:-14, rev:true},
+  {top:62, dur:27, delay:-8,  rev:false},
+];
+const HALLOWEEN_FX_HTML = `<div class="halloween-fx">
+  ${HALLOWEEN_GHOSTS.map(g=>`<span class="hx-ghost${g.rev?" rev":""}" style="top:${g.top}px;animation-duration:${g.dur}s;animation-delay:${g.delay}s;"><span class="bob">${GHOST_SVG}</span></span>`).join("")}
+  <span class="hx-mummy"><span class="waddle">${MUMMY_SVG}</span></span>
+  <span class="hx-witch"><span class="bob">${WITCH_SVG}</span></span>
+  <span class="hx-skel l"><span class="tilt">${SKELETON_PEEK_SVG}</span></span>
+  <span class="hx-skel r"><span class="tilt">${SKELETON_PEEK_SVG}</span></span>
+</div>`;
+// ---------- Thanksgiving theme pieces ----------
+function fallingLeafSvg(color, vein){
+  return `<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="${color}" d="M27 5C18 3 7 8 5 17c-2 8 5 14 12 10 9-5 12-16 10-22z"/><path d="M10 24 22 8" stroke="${vein}" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`;
+}
+const FALLING_LEAVES_CONFIG = [
+  {left:6,  delay:0.0, dur:6.5, size:12, color:"#D4692F", vein:"#7A2E10"},
+  {left:20, delay:2.2, dur:7.5, size:10, color:"#D4A73F", vein:"#8A6A1F"},
+  {left:35, delay:4.1, dur:6.0, size:13, color:"#B3391D", vein:"#5E1E0F"},
+  {left:52, delay:1.3, dur:7.0, size:11, color:"#E8A33D", vein:"#8A6A1F"},
+  {left:68, delay:5.0, dur:6.8, size:12, color:"#D4692F", vein:"#7A2E10"},
+  {left:82, delay:2.9, dur:7.2, size:10, color:"#B3391D", vein:"#5E1E0F"},
+  {left:93, delay:0.7, dur:6.4, size:13, color:"#D4A73F", vein:"#8A6A1F"},
+];
+// Turkey faces LEFT (struts right → left): fanned tail on the right, red wattle on the head.
+function turkeySvg(animated){
+  const fan = [["#B3391D",-62],["#D4692F",-31],["#E8A33D",0],["#D4A73F",31],["#8A5A2E",62]]
+    .map(([c,a])=>`<ellipse cx="28" cy="9" rx="3.4" ry="9" fill="${c}" stroke="#4F2D16" stroke-width=".5" transform="rotate(${a} 28 17)"/>`).join("");
+  const leg = (x,cls)=>`<g class="${animated?"tleg ":""}${cls}"><rect x="${x}" y="24" width="1.6" height="7" rx=".8" fill="#E8A33D"/><path d="M${x-1.6} 31h4.6" stroke="#E8A33D" stroke-width="1.3" stroke-linecap="round"/></g>`;
+  return `<svg viewBox="0 0 40 33" aria-hidden="true">
+    ${fan}
+    ${leg(17,"l")}${leg(22,"r")}
+    <ellipse cx="22" cy="20" rx="10.5" ry="8" fill="#7B4A24"/>
+    <path d="M17 19c3-3 9-3 12 1-3 4-9 4-12-1z" fill="#5E3719"/>
+    <path d="M13 17c-2-3-2-6 0-9l3 1c-1 3 0 5 2 7z" fill="#7B4A24"/>
+    <circle cx="12" cy="8" r="4.3" fill="#8A5A2E"/>
+    <path d="M7.4 7.6L3 9.2l4.5 1.6z" fill="#E8A33D"/>
+    <path d="M8.2 11c-.4 3 .6 4.6 2.2 4.8.9-1.6.6-3.6-.4-5z" fill="#D9261C"/>
+    <circle cx="10.6" cy="6.6" r=".95" fill="#14100C"/>
+  </svg>`;
+}
+// Pilgrim peeking around the page edge (same layout as the skeleton): black buckled hat, beard, white collar,
+// and a hand gripping the corner. Drawn for the LEFT edge; the right side mirrors it.
+const PILGRIM_PEEK_SVG = `<svg viewBox="0 -4 36 44" aria-hidden="true">
+  <path d="M15 40c0-5 3-8.5 9-8.5s10 3.5 10 8.5z" fill="#2B2B33"/>
+  <path d="M19.5 32.3l5.2 4.6 5.3-4.6z" fill="#F7F3E8"/>
+  <g class="pghead" style="transform-origin:26px 30px">
+    <ellipse cx="25.5" cy="19.5" rx="8.4" ry="9.6" fill="#F1C9A0"/>
+    <path d="M17.2 17c-.6 4 .4 6.5 1.4 8.2M33.8 17c.6 4-.4 6.5-1.4 8.2" stroke="#7A4A24" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M18.4 23c.8 5.6 3.6 8.6 7.1 8.6s6.3-3 7.1-8.6c-1.8 2-4 2.6-7.1 2.6s-5.3-.6-7.1-2.6z" fill="#7A4A24"/>
+    <path d="M22.6 24.4q2.9 1.8 5.8 0" stroke="#3E2410" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <circle cx="22" cy="17.6" r="1.25" fill="#1A1410"/><circle cx="29" cy="17.6" r="1.25" fill="#1A1410"/>
+    <path d="M20.2 15.4l3-.7M27 14.7l3 .7" stroke="#5A3418" stroke-width=".9" stroke-linecap="round"/>
+    <path d="M25.6 18.6l-1.1 2.6h2.1" stroke="#C9976A" stroke-width=".8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <ellipse cx="25.5" cy="11.4" rx="13" ry="2.7" fill="#17171D"/>
+    <path d="M19.4 11.4L20.8-2.6h9.4l1.4 14z" fill="#24242C"/>
+    <rect x="19.5" y="6.6" width="12" height="3" fill="#0E0E13"/>
+    <rect x="23.4" y="6.1" width="4.2" height="4" rx=".5" fill="none" stroke="#E8A33D" stroke-width="1.1"/>
+  </g>
+  <path d="M6 40c1-6 3-9 7-11" stroke="#2B2B33" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+  <g fill="#F1C9A0"><rect x="10.2" y="22.5" width="2.2" height="7.5" rx="1.1"/><rect x="12.9" y="21.2" width="2.2" height="8.5" rx="1.1"/><rect x="15.6" y="22" width="2.1" height="7.5" rx="1.05"/><rect x="8.2" y="25.2" width="2.1" height="5" rx="1.05" transform="rotate(-18 9 27)"/></g>
+  <ellipse cx="13" cy="30.5" rx="4.6" ry="3" fill="#F1C9A0"/>
+  <rect x="9.5" y="29" width="7" height="2.2" rx="1" fill="#F7F3E8"/>
+</svg>`;
+const TURKEY_SVG = `<span class="turkey-accent">${turkeySvg(false)}</span>`;
+// Squirrel faces RIGHT (dashes left → right) carrying an acorn.
+const SQUIRREL_SVG = `<svg viewBox="0 0 30 24" aria-hidden="true">
+  <path d="M9 18C0 17-1 6 5 3c-2 5 1 8 6 8z" fill="#9A6A3A"/>
+  <ellipse cx="14" cy="16" rx="8" ry="5.5" fill="#A87444"/>
+  <circle cx="21.5" cy="11.5" r="4.3" fill="#B98350"/>
+  <path d="M19.4 8.6L19 4.8l3.2 2.4z" fill="#B98350"/>
+  <circle cx="23" cy="10.6" r=".9" fill="#14100C"/><circle cx="25.6" cy="12.4" r=".9" fill="#3A2412"/>
+  <ellipse cx="14.5" cy="19.5" rx="5" ry="2.2" fill="#8A5A2E"/>
+  <ellipse cx="25.5" cy="17.6" rx="2.6" ry="2.1" fill="#C9904F"/><path d="M23.3 16.4q2.4-2.2 4.6 0z" fill="#6B4423"/>
+</svg>`;
+const ACORN_SVG = `<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M10 6c4 0 6.5 3 6 7-.5 4.5-3 8.5-6 10-3-1.5-5.5-5.5-6-10-.5-4 2-7 6-7z" fill="#C9904F"/><path d="M2.5 9.2C2.5 5.5 6 3.4 10 3.4s7.5 2.1 7.5 5.8z" fill="#6B4423"/><path d="M10 3.4V.6" stroke="#4F2D16" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+const FALLING_ACORNS = [{left:14,delay:1.0,dur:7.4,size:11},{left:46,delay:3.4,dur:6.8,size:10},{left:76,delay:0.2,dur:7.8,size:12}];
+const THANKS_FX_HTML = `<div class="falling-leaves">${FALLING_LEAVES_CONFIG.map(l=>
+    `<span class="falling-leaf" style="left:${l.left}%;width:${l.size}px;height:${l.size}px;animation-delay:${l.delay}s;animation-duration:${l.dur}s;">${fallingLeafSvg(l.color,l.vein)}</span>`).join("")}
+  ${FALLING_ACORNS.map(a=>`<span class="falling-acorn" style="left:${a.left}%;width:${a.size*0.85}px;height:${a.size}px;animation-delay:${a.delay}s;animation-duration:${a.dur}s;">${ACORN_SVG}</span>`).join("")}</div>
+<div class="thanks-fx">
+  <span class="tx-turkey"><span class="strut">${turkeySvg(true)}</span></span>
+  <span class="tx-squirrel"><span class="hop">${SQUIRREL_SVG}</span></span>
+  <span class="tx-pilgrim l">${PILGRIM_PEEK_SVG}</span>
+  <span class="tx-pilgrim r">${PILGRIM_PEEK_SVG}</span>
+</div>`;
+// Seasonal theme by month: October = Halloween, November = Thanksgiving. (Other months show the plain
+// header.) Preview with ?theme=halloween, ?theme=thanksgiving or ?theme=none in the URL.
+const SEASON_THEMES = {
+  halloween: {icon: PUMPKIN_SVG, fx: HALLOWEEN_FX_HTML, rootClass: "theme-halloween"},
+  thanksgiving:{icon: TURKEY_SVG, fx: THANKS_FX_HTML, rootClass: "theme-thanksgiving"},
+  none:      {icon: "",          fx: "",                rootClass: null},
+};
+const THEME_BY_MONTH = {9:"halloween", 10:"thanksgiving"}; // JS months are 0-based: 9 = Oct, 10 = Nov
+const SEASON_THEME = (()=>{
+  const override = new URLSearchParams(location.search).get("theme");
+  if(override && SEASON_THEMES[override]) return override;
+  return THEME_BY_MONTH[new Date().getMonth()] || "none";
+})();
+if(SEASON_THEMES[SEASON_THEME].rootClass) document.documentElement.classList.add(SEASON_THEMES[SEASON_THEME].rootClass);
+const BRAND_ICON = SEASON_THEMES[SEASON_THEME].icon;
+const TOPBAR_FX_HTML = SEASON_THEMES[SEASON_THEME].fx;
+function weekLabel(week){ return week ? SPORT_LABELS[week.sport]+" Week "+week.week_num : ""; }
+function weekOptionLabel(id){ const w=STATE.weeks[id]; return weekLabel(w) + (w.finalized?" (locked)":" (draft)"); }
+
+// ---------- state ----------
+let STATE = { users:{}, owner:null, commissioners:[], weeks:{}, weekOrder:[], currentWeek:null, log:[] };
+let ME = null;
+let ROUTE = "picks";
+let LOADING = true;
+let AUTH_MODE = "login";
+let AUTH_ERR = "";
+
+// ---------- data access (Supabase) ----------
+async function loadAll(){
+  const [users, league, weeks, log] = await Promise.all([
+    sb("/rest/v1/bma_users?select=*"),
+    sb("/rest/v1/bma_league?id=eq."+LEAGUE_ID+"&select=*"),
+    sb("/rest/v1/bma_weeks?select=*,bma_games(*)&order=created_at.asc"),
+    sb("/rest/v1/bma_log?select=*&order=ts.desc&limit=300")
+  ]);
+  STATE.users = {};
+  (users||[]).forEach(u=> STATE.users[u.username] = {email:u.email, passHash:u.pass_hash, joinedAt:u.joined_at});
+  const lg = (league||[])[0];
+  STATE.owner = lg ? lg.owner : null;
+  STATE.commissioners = lg ? (lg.commissioners || (lg.commissioner ? [lg.commissioner] : [])) : [];
+  STATE.currentWeek = lg ? lg.current_week : null;
+  STATE.weeks = {}; STATE.weekOrder = [];
+  (weeks||[]).forEach(w=>{
+    STATE.weeks[w.id] = {
+      sport:w.sport, week_num:w.week_num, finalized:w.finalized, locked:w.locked, created_at:w.created_at,
+      startDate:w.start_date, endDate:w.end_date,
+      games: (w.bma_games||[]).map(g=>({
+        id:g.id, away:g.away, home:g.home, favorite:g.favorite, spread:Number(g.spread), points:Number(g.points),
+        kickoff:g.kickoff, dayLabel:g.day_label, espnId:g.espn_id,
+        result: g.has_result ? {awayScore:g.away_score, homeScore:g.home_score} : null
+      })).sort((a,b)=> (a.kickoff||"").localeCompare(b.kickoff||""))
+    };
+    STATE.weekOrder.push(w.id);
+  });
+  STATE.log = (log||[]).map(l=>({ts:new Date(l.ts).getTime(), actor:l.actor, action:l.action, detail:l.detail}));
+}
+
+async function ensureLeagueRow(){
+  const existing = await sb("/rest/v1/bma_league?id=eq."+LEAGUE_ID+"&select=id");
+  if(!existing || existing.length===0){
+    await sb("/rest/v1/bma_league", {method:"POST", prefer:"return=minimal", body: JSON.stringify({id:LEAGUE_ID, owner:null, commissioners:[], current_week:null})});
+  }
+}
+async function patchLeague(fields){
+  await sb("/rest/v1/bma_league?id=eq."+LEAGUE_ID, {method:"PATCH", prefer:"return=minimal", body: JSON.stringify(fields)});
+}
+
+async function loadPicksFor(weekId, username){
+  const rows = await sb("/rest/v1/bma_picks?week_id=eq."+encodeURIComponent(weekId)+"&username=eq."+encodeURIComponent(username)+"&select=picks");
+  return (rows && rows[0]) ? rows[0].picks : {};
+}
+async function savePicksFor(weekId, username, picks){
+  await sb("/rest/v1/bma_picks", {
+    method:"POST", prefer:"resolution=merge-duplicates,return=minimal",
+    body: JSON.stringify({week_id:weekId, username, picks, updated_at:new Date().toISOString()})
+  });
+}
+
+async function loadAdjustment(weekId, username){
+  const rows = await sb("/rest/v1/bma_adjustments?week_id=eq."+encodeURIComponent(weekId)+"&username=eq."+encodeURIComponent(username)+"&select=amount,note");
+  return (rows && rows[0]) ? {amount:Number(rows[0].amount)||0, note:rows[0].note||""} : {amount:0, note:""};
+}
+async function saveAdjustment(weekId, username, amount, note){
+  await sb("/rest/v1/bma_adjustments", {
+    method:"POST", prefer:"resolution=merge-duplicates,return=minimal",
+    body: JSON.stringify({week_id:weekId, username, amount, note, updated_at:new Date().toISOString()})
+  });
+}
+
+async function addLog(action, detail){
+  const entry = {ts:Date.now(), actor:ME, action, detail};
+  STATE.log.unshift(entry);
+  await sb("/rest/v1/bma_log", {method:"POST", prefer:"return=minimal", body: JSON.stringify({actor:ME, action, detail})});
+}
+
+// ---------- ESPN live fetch ----------
+function parseEspnOdds(comp, homeC, awayC){
+  const oddsArr = comp.odds || [];
+  if(!oddsArr.length) return null;
+  const o = oddsArr[0];
+  let favorite = null, spread = null;
+  if(typeof o.spread === "number"){
+    spread = Math.abs(o.spread);
+    favorite = o.spread < 0 ? "home" : (o.spread > 0 ? "away" : "home");
+  } else if(o.details){
+    const m = o.details.match(/(-?\d+(\.\d+)?)/);
+    if(m){
+      spread = Math.abs(Number(m[1]));
+      const favAbbr = o.details.split(" ")[0];
+      favorite = (homeC && homeC.team && (homeC.team.abbreviation===favAbbr)) ? "home" : "away";
+    }
+  }
+  if(spread==null) return null;
+  return {favorite, spread};
+}
+function ymdList(startYmd, endYmd){
+  const out = [];
+  const d = new Date(startYmd+"T00:00:00Z");
+  const end = new Date(endYmd+"T00:00:00Z");
+  while(d.getTime() <= end.getTime()){
+    out.push(d.getUTCFullYear()+String(d.getUTCMonth()+1).padStart(2,"0")+String(d.getUTCDate()).padStart(2,"0"));
+    d.setUTCDate(d.getUTCDate()+1);
+  }
+  return out;
+}
+// ESPN's `dates=` range param isn't reliably respected for college football, so this
+// fetches day-by-day (padded a day on each side for timezone slop) and then keeps only
+// games whose Central-time kickoff date actually falls in [startDate, endDate].
+async function fetchEspnSlate(startDate, endDate){
+  const days = ymdList(addDaysToYmd(startDate,-1), addDaysToYmd(endDate,1));
+  const seen = new Map();
+  for(const ymd of days){
+    const url = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${ymd}&groups=80&limit=400`;
+    let res;
+    try{ res = await fetch(url); }catch(e){ continue; }
+    if(!res.ok) continue; // skip a bad day rather than failing the whole slate
+    const data = await res.json();
+    const events = data.events || [];
+    for(const ev of events){
+      if(seen.has(ev.id)) continue;
+      const comp = ev.competitions && ev.competitions[0];
+      if(!comp) continue;
+      const competitors = comp.competitors || [];
+      const homeC = competitors.find(c=>c.homeAway==="home");
+      const awayC = competitors.find(c=>c.homeAway==="away");
+      if(!homeC || !awayC) continue;
+      const kickoff = comp.date || ev.date || null;
+      if(kickoff){
+        const info = chicagoInfo(new Date(kickoff));
+        if(info.ymd < startDate || info.ymd > endDate) continue;
+      }
+      const parsedOdds = parseEspnOdds(comp, homeC, awayC);
+      const favorite = parsedOdds ? parsedOdds.favorite : "home";
+      const spread = parsedOdds ? parsedOdds.spread : 0;
+      seen.set(ev.id, {
+        espnId: ev.id,
+        away: awayC.team ? (awayC.team.shortDisplayName||awayC.team.displayName) : "TBD",
+        home: homeC.team ? (homeC.team.shortDisplayName||homeC.team.displayName) : "TBD",
+        favorite, spread, kickoff,
+        dayLabel: kickoff ? new Date(kickoff).toLocaleDateString(undefined,{weekday:"short"}) : ""
+      });
+    }
+  }
+  return Array.from(seen.values());
+}
+
+// ---------- pick locking (Thu kickoff / Sat 11am Central cutoff) ----------
+function addDaysToYmd(ymd, days){
+  const [y,m,d] = ymd.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d, 12, 0, 0));
+  dt.setUTCDate(dt.getUTCDate()+days);
+  return dt.getUTCFullYear()+"-"+String(dt.getUTCMonth()+1).padStart(2,"0")+"-"+String(dt.getUTCDate()).padStart(2,"0");
+}
+function chicagoInfo(dateObj){
+  const wd = new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",weekday:"short"}).format(dateObj);
+  const ymd = new Intl.DateTimeFormat("en-CA",{timeZone:"America/Chicago",year:"numeric",month:"2-digit",day:"2-digit"}).format(dateObj);
+  return {wd, ymd};
+}
+// Returns a Date for 11:00am CDT on the Saturday of this week's slate, or null if the
+// week has no Thu/Fri/Sat games to anchor from (e.g. a Sun/Mon-only slate).
+// Builds the real instant for a Chicago wall-clock time on a given YYYY-MM-DD, honoring daylight saving
+// (CDT -05:00 vs CST -06:00) so "11am Saturday" stays 11am Central all year.
+function chicagoWallTime(ymd, hour, minute){
+  const [y,m,d] = ymd.split("-").map(Number);
+  let guess = Date.UTC(y, m-1, d, hour, minute);
+  for(let i=0;i<2;i++){
+    const parts = new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",hourCycle:"h23",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).formatToParts(new Date(guess));
+    const g = t=>Number(parts.find(x=>x.type===t).value);
+    const shown = Date.UTC(g("year"), g("month")-1, g("day"), g("hour"), g("minute"));
+    guess += Date.UTC(y, m-1, d, hour, minute) - shown;
+  }
+  return new Date(guess);
+}
+function weekSaturdayCutoff(week){
+  if(week._satCutoffCached !== undefined) return week._satCutoffCached;
+  const withKickoff = (week.games||[]).filter(g=>g.kickoff);
+  if(!withKickoff.length){ week._satCutoffCached = null; return null; }
+  const info = withKickoff.map(g=>({g, ...chicagoInfo(new Date(g.kickoff))}));
+  let satYmd = (info.find(x=>x.wd==="Sat")||{}).ymd;
+  if(!satYmd){
+    const anchors = info.filter(x=>x.wd==="Thu"||x.wd==="Fri").sort((a,b)=>new Date(a.g.kickoff)-new Date(b.g.kickoff));
+    if(!anchors.length){ week._satCutoffCached = null; return null; }
+    const anchor = anchors[0];
+    satYmd = addDaysToYmd(anchor.ymd, anchor.wd==="Thu"?2:1);
+  }
+  const cutoff = chicagoWallTime(satYmd, 11, 0);
+  week._satCutoffCached = cutoff;
+  return cutoff;
+}
+function gameLockTime(g, week){
+  const cutoff = weekSaturdayCutoff(week);
+  const kickoffMs = g.kickoff ? new Date(g.kickoff).getTime() : Infinity;
+  const cutoffMs = cutoff ? cutoff.getTime() : Infinity;
+  return Math.min(kickoffMs, cutoffMs);
+}
+function isGameLocked(g, week){
+  return Date.now() >= gameLockTime(g, week);
+}
+
+// ---------- pick activity log ----------
+async function loadPickActivity(weekId, username){
+  const rows = await sb("/rest/v1/bma_pick_activity?week_id=eq."+encodeURIComponent(weekId)+"&username=eq."+encodeURIComponent(username)+"&select=*&order=ts.desc&limit=50");
+  return rows||[];
+}
+async function logPickActivity(weekId, username, pickCount, by){
+  await sb("/rest/v1/bma_pick_activity", {method:"POST", prefer:"return=minimal", body: JSON.stringify({week_id:weekId, username, pick_count:pickCount, made_by:by})});
+}
+
+// ---------- ESPN result auto-sync ----------
+const ESPN_SCORE_CACHE = {};
+const ESPN_WINPROB_CACHE = {};
+const LAST_POSSESSION_CACHE = {}; // espnId -> {possessionAbbr, possessionText, possessionSide} — carries over when ESPN briefly omits the possession team on a live game
+async function fetchEspnWinProb(sport, espnId){
+  const league = "college-football";
+  const url = `https://site.api.espn.com/apis/site/v2/sports/football/${league}/summary?event=${espnId}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error("ESPN request failed ("+res.status+")");
+  const data = await res.json();
+  // Prefer the live-updating win probability feed; fall back to the pregame predictor.
+  let homePct = null, awayPct = null;
+  const wp = data.winprobability;
+  if(Array.isArray(wp) && wp.length){
+    const last = wp[wp.length-1];
+    if(last && last.homeWinPercentage!=null){ homePct = Math.round(last.homeWinPercentage*100); awayPct = 100-homePct; }
+  }
+  if(homePct==null && data.predictor && data.predictor.homeTeam){
+    const h = Number(data.predictor.homeTeam.gameProjection);
+    if(!isNaN(h)){ homePct = Math.round(h); awayPct = 100-homePct; }
+  }
+  let result = homePct==null ? null : {homeWinPct:homePct, awayWinPct:awayPct};
+  // Best-effort: real ATS cover probability, from a different ESPN domain than
+  // everything else in this app. Not guaranteed to work or be populated — if it
+  // fails or comes back empty, we just don't show it. Never fabricated.
+  try{
+    const coverPct = await fetchEspnCoverProb(espnId);
+    if(coverPct && result) result = {...result, ...coverPct};
+    else if(coverPct) result = coverPct;
+  }catch(e){}
+  // Best-effort: fuller situation data (possession team + side, yard line, down/distance) read
+  // from this same per-game summary payload — used as a fallback when the batched scoreboard
+  // feed (fetchEspnScores, one call covering the whole week) leaves situation.possession out
+  // for this particular game, which ESPN does for some games even while yardLine is present.
+  try{
+    const situationFallback = extractEspnSituation(data);
+    if(situationFallback) result = result ? {...result, situationFallback} : {situationFallback};
+  }catch(e){}
+  return result;
+}
+function extractEspnSituation(data){
+  const headerComp = data.header && data.header.competitions && data.header.competitions[0];
+  const situation = (headerComp && headerComp.situation) || data.situation || null;
+  if(!situation) return null;
+  const competitors = (headerComp && headerComp.competitors) || [];
+  const homeC = competitors.find(c=>c.homeAway==="home");
+  const awayC = competitors.find(c=>c.homeAway==="away");
+  let possessionSide = null, possessionAbbr = null;
+  if(situation.possession){
+    if(homeC && String(homeC.id)===String(situation.possession)){ possessionSide="home"; possessionAbbr = homeC.team ? (homeC.team.abbreviation||homeC.team.shortDisplayName) : null; }
+    else if(awayC && String(awayC.id)===String(situation.possession)){ possessionSide="away"; possessionAbbr = awayC.team ? (awayC.team.abbreviation||awayC.team.shortDisplayName) : null; }
+  }
+  if(situation.yardLine==null && !situation.possessionText && !possessionSide) return null;
+  return {
+    yardLine: situation.yardLine!=null ? situation.yardLine : null,
+    possessionText: situation.possessionText || null,
+    possessionAbbr,
+    possessionSide,
+    isRedZone: !!situation.isRedZone,
+    downDistanceText: situation.shortDownDistanceText || situation.downDistanceText || null,
+  };
+}
+async function fetchEspnCoverProb(espnId){
+  const league = "college-football";
+  const url = `https://sports.core.api.espn.com/v2/sports/football/leagues/${league}/events/${espnId}/competitions/${espnId}/probabilities?limit=300`;
+  const res = await fetch(url);
+  if(!res.ok) return null;
+  const data = await res.json();
+  const items = data.items || [];
+  if(!items.length) return null;
+  const latest = items[items.length-1];
+  if(latest.spreadCoverProbHome==null) return null;
+  const homeCoverPct = Math.round(latest.spreadCoverProbHome*100);
+  const pushPct = Math.round((latest.spreadPushProb||0)*100);
+  const awayCoverPct = 100 - homeCoverPct - pushPct;
+  // ESPN sometimes leaves this at a flat 0 when it isn't actually populated
+  // for a given game — treat that as "no real data" rather than show a fake 0%.
+  if(homeCoverPct===0 && awayCoverPct===0) return null;
+  return {homeCoverPct, awayCoverPct};
+}
+async function getWinProbCached(sport, espnId, forceRefresh){
+  const key = sport+":"+espnId;
+  const c = ESPN_WINPROB_CACHE[key];
+  if(!forceRefresh && c && (Date.now()-c.ts) < 20000) return c.data;
+  const data = await fetchEspnWinProb(sport, espnId);
+  ESPN_WINPROB_CACHE[key] = {ts:Date.now(), data};
+  return data;
+}
+async function fetchEspnScores(startDate, endDate){
+  const days = ymdList(addDaysToYmd(startDate,-1), addDaysToYmd(endDate,1));
+  const map = {};
+  for(const ymd of days){
+    const url = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${ymd}&groups=80&limit=400`;
+    let res;
+    try{ res = await fetch(url); }catch(e){ continue; }
+    if(!res.ok) continue;
+    const data = await res.json();
+    (data.events||[]).forEach(ev=>{
+      if(map[ev.id]) return;
+      const comp = ev.competitions && ev.competitions[0];
+      if(!comp) return;
+      const kickoff = comp.date || ev.date || null;
+      if(kickoff){
+        const info = chicagoInfo(new Date(kickoff));
+        if(info.ymd < startDate || info.ymd > endDate) return;
+      }
+      const competitors = comp.competitors || [];
+      const homeC = competitors.find(c=>c.homeAway==="home");
+      const awayC = competitors.find(c=>c.homeAway==="away");
+      const statusType = comp.status && comp.status.type;
+      const completed = !!(statusType && statusType.completed);
+      const state = statusType ? statusType.state : "pre"; // 'pre' | 'in' | 'post'
+      const detail = statusType ? (statusType.shortDetail || statusType.detail || "") : "";
+      const period = comp.status ? comp.status.period : null;
+      const displayClock = comp.status ? comp.status.displayClock : null;
+      const situation = comp.situation || {};
+      let possessionAbbr = null, possessionSide = null;
+      if(situation.possession){
+        if(homeC && String(homeC.id)===String(situation.possession)){ possessionSide = "home"; possessionAbbr = homeC.team ? (homeC.team.abbreviation||homeC.team.shortDisplayName) : null; }
+        else if(awayC && String(awayC.id)===String(situation.possession)){ possessionSide = "away"; possessionAbbr = awayC.team ? (awayC.team.abbreviation||awayC.team.shortDisplayName) : null; }
+      }
+      let possessionText = situation.possessionText || null;
+      if(state==="in"){
+        // ESPN's batched scoreboard feed sometimes drops possession for a game entirely (not just
+        // briefly) — fall back to the last value we actually saw for this game rather than showing
+        // no team; the per-game summary fetch (fetchEspnWinProb) fills in a fuller fallback on top.
+        if(possessionAbbr || possessionText || possessionSide){
+          LAST_POSSESSION_CACHE[ev.id] = {possessionAbbr, possessionText, possessionSide};
+        } else if(LAST_POSSESSION_CACHE[ev.id]){
+          possessionAbbr = LAST_POSSESSION_CACHE[ev.id].possessionAbbr;
+          possessionText = LAST_POSSESSION_CACHE[ev.id].possessionText;
+          possessionSide = LAST_POSSESSION_CACHE[ev.id].possessionSide;
+        }
+      } else {
+        delete LAST_POSSESSION_CACHE[ev.id];
+      }
+      map[ev.id] = { completed, state, detail, period, displayClock, possessionAbbr, possessionSide,
+        homeId: homeC?homeC.id:null, awayId: awayC?awayC.id:null,
+        yardLine: situation.yardLine!=null ? situation.yardLine : null,
+        possessionText,
+        isRedZone: !!situation.isRedZone,
+        downDistanceText: situation.shortDownDistanceText || situation.downDistanceText || null,
+        homeScore: homeC?Number(homeC.score):null, awayScore: awayC?Number(awayC.score):null };
+    });
+  }
+  return map;
+}
+async function getEspnScoresCached(startDate, endDate, forceRefresh){
+  const key = startDate+":"+endDate;
+  const c = ESPN_SCORE_CACHE[key];
+  if(!forceRefresh && c && (Date.now()-c.ts) < 30000) return c.data;
+  const data = await fetchEspnScores(startDate, endDate);
+  ESPN_SCORE_CACHE[key] = {ts:Date.now(), data};
+  return data;
+}
+// Fills in any missing results for a finalized week straight from ESPN. Never
+// overwrites a result that's already been entered (manual corrections stick).
+async function syncWeekResults(week){
+  if(!week || !week.finalized) return false;
+  const pending = (week.games||[]).filter(g=>!g.result && g.espnId);
+  if(!pending.length) return false;
+  if(!week.startDate || !week.endDate) return false;
+  let scores;
+  try{ scores = await getEspnScoresCached(week.startDate, week.endDate); }catch(e){ return false; }
+  let changed = false;
+  for(const g of pending){
+    const s = scores[g.espnId];
+    if(s && s.completed && s.homeScore!=null && s.awayScore!=null){
+      await sb("/rest/v1/bma_games?id=eq."+encodeURIComponent(g.id), {method:"PATCH", prefer:"return=minimal", body: JSON.stringify({away_score:s.awayScore, home_score:s.homeScore, has_result:true})});
+      g.result = {awayScore:s.awayScore, homeScore:s.homeScore};
+      changed = true;
+      if(week.locked) await addLog("Result auto-synced from ESPN", `${g.away} ${s.awayScore} — ${g.home} ${s.homeScore}`);
+    }
+  }
+  return changed;
+}
+
+// ---------- grading (same rules as before) ----------
+function marginForFavorite(game, scores){
+  const s = scores || game.result;
+  return game.favorite==="home" ? (s.homeScore-s.awayScore) : (s.awayScore-s.homeScore);
+}
+function coverResult(game, side, scoresOverride){
+  const scores = scoresOverride || game.result;
+  if(!scores) return null;
+  const marginFav = marginForFavorite(game, scores);
+  const spread = Number(game.spread);
+  if(side===game.favorite){
+    if(marginFav>spread) return "win"; if(marginFav===spread) return "push"; return "loss";
+  } else {
+    if(marginFav<spread) return "win"; if(marginFav===spread) return "push"; return "loss";
+  }
+}
+function scoreWeek(week, picks, adjustment){
+  adjustment = adjustment || 0;
+  let total=0, wins=0, losses=0, pushes=0; const perGame={};
+  for(const g of week.games){
+    const p = picks[g.id]; if(!p || !p.side) continue;
+    const base = coverResult(g, p.side); let pts=0;
+    if(base==="win"){ pts = 1; wins++; }
+    else if(base==="loss"){ pts = 0; losses++; }
+    else if(base==="push"){ pts=0; pushes++; }
+    perGame[g.id] = {base, pts, side:p.side};
+    total += pts;
+  }
+  total += adjustment;
+  return {total, wins, losses, pushes, perGame, adjustment};
+}
+
+// ---------- render root ----------
+const app = document.getElementById("app");
+function render(){
+  if(LOADING){ app.innerHTML = `<div class="login-wrap"><div class="disp" style="font-size:20px;color:var(--text-dim);">Loading the board…</div></div>`; return; }
+  if(!ME){ renderAuth(); return; }
+  renderApp();
+}
+
+function renderAuth(){
+  const isJoin = AUTH_MODE==="join";
+  app.innerHTML = `
+    <div class="login-wrap">
+      <div class="card login-card">
+        <div class="brand" style="margin-bottom:14px;">${BRAND_ICON}<span class="mark">BMAS</span>${BRAND_ICON}<span class="sub">pick'em league</span></div>
+        <div class="login-tabs">
+          <button class="login-tab ${!isJoin?'active':''}" id="tab-login">Log in</button>
+          <button class="login-tab ${isJoin?'active':''}" id="tab-join">Join league</button>
+        </div>
+        <form id="auth-form">
+          ${isJoin?`
+            <div class="field"><label>Username</label><input name="username" required maxlength="20" autocomplete="off"></div>
+            <div class="field"><label>Email</label><input name="email" type="email" required></div>
+            <div class="field"><label>Password</label><input name="password" type="password" required minlength="4"></div>
+          `:`
+            <div class="field"><label>Username</label><input name="username" required autocomplete="off"></div>
+            <div class="field"><label>Password</label><input name="password" type="password" required></div>
+          `}
+          ${AUTH_ERR?`<div class="error">${esc(AUTH_ERR)}</div>`:""}
+          <button type="submit" class="btn gold" style="width:100%;margin-top:14px;">${isJoin?"Join the league":"Log in"}</button>
+        </form>
+        <p style="font-size:12px;color:var(--text-dim);margin-top:14px;">${isJoin?"First one in becomes league owner and can appoint commissioners.":"New here? Switch to Join league above."}</p>
+      </div>
+    </div>`;
+  document.getElementById("tab-login").onclick = ()=>{AUTH_MODE="login";AUTH_ERR="";render();};
+  document.getElementById("tab-join").onclick = ()=>{AUTH_MODE="join";AUTH_ERR="";render();};
+  document.getElementById("auth-form").onsubmit = async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const username = (fd.get("username")||"").trim();
+    const password = (fd.get("password")||"").trim();
+    try{
+      if(isJoin){
+        const email = (fd.get("email")||"").trim();
+        if(!username || !email || !password){ AUTH_ERR="Fill out every field."; render(); return; }
+        if(STATE.users[username]){ AUTH_ERR="That username is taken."; render(); return; }
+        const passHash = await sha256(password);
+        await sb("/rest/v1/bma_users", {method:"POST", prefer:"return=minimal", body: JSON.stringify({username, email, pass_hash:passHash})});
+        const isFirst = Object.keys(STATE.users).length===0;
+        STATE.users[username] = {email, passHash, joinedAt:Date.now()};
+        if(isFirst){ STATE.owner = username; await patchLeague({owner:username}); }
+        ME = username; localSet("bmasUser", username);
+        await addLog("Member joined", `${username} joined the league.`);
+        render();
+      } else {
+        const u = STATE.users[username];
+        if(!u){ AUTH_ERR="No account with that username."; render(); return; }
+        const passHash = await sha256(password);
+        if(passHash!==u.passHash){ AUTH_ERR="Wrong password."; render(); return; }
+        ME = username; localSet("bmasUser", username);
+        render();
+      }
+    }catch(err){ AUTH_ERR = "Couldn't reach the database. Check your connection and try again."; render(); }
+  };
+}
+
+function isCommish(){ return ME && STATE.commissioners.includes(ME); }
+function isOwner(){ return ME && ME===STATE.owner; }
+
+function renderApp(){
+  const tabs = [
+    {id:"picks", label:"My Picks"}, {id:"allpicks", label:"All Picks"}, {id:"leaderboard", label:"Leaderboard"},
+    {id:"history", label:"History"}, {id:"log", label:"Change Log"},
+  ];
+  if(isCommish()) tabs.push({id:"commish", label:"Commissioner"}, {id:"audit", label:"Score Audit"});
+  if(isOwner()) tabs.push({id:"owner", label:"League Setup"});
+  app.innerHTML = `
+    <div class="topbar">
+      ${TOPBAR_FX_HTML}
+      <div class="topbar-row">
+        <div class="brand">${BRAND_ICON}<span class="mark">BMAS</span>${BRAND_ICON}<span class="sub">pick'em league</span></div>
+        <button class="user-chip" id="who-btn">${esc(ME)} ▾</button>
+      </div>
+      <div class="tabs">${tabs.map(t=>`<button class="tab-btn ${ROUTE===t.id?'active':''}" data-r="${t.id}">${t.label}</button>`).join("")}</div>
+    </div>
+    <main id="main"></main>
+    <div style="text-align:center;font-size:10px;color:var(--text-dim);opacity:.5;padding:0 0 18px;">build 11-07b · lock 11am Central</div>`;
+  document.getElementById("who-btn").onclick = ()=>{ ROUTE="account"; renderMain(); };
+  app.querySelectorAll(".tab-btn").forEach(b=> b.onclick = ()=>{
+    ROUTE=b.dataset.r;
+    app.querySelectorAll(".tab-btn").forEach(x=>x.classList.toggle("active", x===b));
+    renderMain();
+  });
+  renderMain();
+}
+
+async function renderMain(){
+  stopLivePolling();
+  const main = document.getElementById("main");
+  main.innerHTML = `<div class="empty">Loading…</div>`;
+  try{
+    if(ROUTE==="picks") await renderPicksPage(main);
+    else if(ROUTE==="allpicks") await renderAllPicksPage(main);
+    else if(ROUTE==="leaderboard") await renderLeaderboardPage(main);
+    else if(ROUTE==="history") await renderHistoryPage(main);
+    else if(ROUTE==="log") renderLogPage(main);
+    else if(ROUTE==="commish") await renderCommishPage(main);
+    else if(ROUTE==="audit") await renderAuditPage(main);
+    else if(ROUTE==="owner") renderOwnerPage(main);
+    else if(ROUTE==="account") renderAccountPage(main);
+  }catch(err){
+    main.innerHTML = `<div class="empty"><div class="disp">Something went sideways</div>${esc(err.message||String(err))}</div>`;
+  }
+}
+
+// ---------- My Picks ----------
+let PICKS_VIEW_MODE = "edit";
+let LIVE_POLL_TIMER = null; // auto-refresh for the My Picks summary while games are live
+function stopLivePolling(){ if(LIVE_POLL_TIMER){ clearInterval(LIVE_POLL_TIMER); LIVE_POLL_TIMER = null; } }
+
+async function renderPicksPage(main){
+  EXPANDED_STATS_GAME = null;
+  const weekId = STATE.currentWeek;
+  const week = weekId ? STATE.weeks[weekId] : null;
+  if(!week){ main.innerHTML = `<div class="empty"><div class="disp">No week is live yet</div>${isCommish()?"Head to the Commissioner tab to build this week's slate.":"The commissioners haven't set up games yet — check back soon."}</div>`; return; }
+  if(!week.finalized){ main.innerHTML = `<div class="empty"><div class="disp">${esc(weekLabel(week))} isn't finalized</div>The commissioners are still setting the lines. Picks open once it's locked in.</div>`; return; }
+  try{ await syncWeekResults(week); }catch(e){}
+  const picks = await loadPicksFor(weekId, ME);
+  PICKS_VIEW_MODE = Object.values(picks).some(p=>p && p.side) ? "summary" : "edit";
+  renderPickGames(main, week, weekId, picks, ME, true, true, true);
+}
+const PICK_LIMIT = 10;
+
+function renderPickGames(main, week, weekId, picks, forUser, editable, respectLock, useSummaryFlow){
+  stopLivePolling();
+  if(useSummaryFlow && PICKS_VIEW_MODE==="summary"){ renderPicksSummary(main, week, weekId, picks, forUser, respectLock); return; }
+  const pickedCount = Object.values(picks).filter(p=>p&&p.side).length;
+  main.innerHTML = `
+    <div class="card">
+      <h2 class="card-title">${esc(weekLabel(week))}</h2>
+      <p class="card-sub">${week.games.length} game${week.games.length===1?"":"s"} · full FBS slate</p>
+      <div class="notice"><strong>${pickedCount}/${PICK_LIMIT} picked</strong> — pick exactly ${PICK_LIMIT} sides to save.${respectLock?` Picks lock per game at kickoff, and everything remaining locks at 11am Central Saturday.`:""}</div>
+      ${editable?`<div style="display:flex;gap:8px;margin-bottom:10px;"><button class="btn gold" id="save-picks-btn-top" style="flex:1;">Save picks</button><button class="btn ghost sm" id="cancel-picks-btn-top" style="flex:1;">Cancel</button></div><div id="save-msg-top" style="font-size:13px;margin-bottom:10px;"></div>`:""}
+      ${respectLock?`<button class="btn ghost sm" id="refresh-scores-btn" style="margin-bottom:10px;">↻ Refresh scores</button>`:""}
+      <input type="search" id="games-search" placeholder="Search teams…" style="margin-bottom:10px;">
+      <div id="games-search-empty" class="card-sub" style="display:none;">No games match "<span id="games-search-empty-term"></span>".</div>
+      <div id="games-list"></div>
+      ${editable?`<button class="btn gold" id="save-picks-btn" style="width:100%;margin-top:6px;">Save picks</button><button class="btn ghost sm" id="cancel-picks-btn" style="width:100%;margin-top:8px;">Cancel</button><div id="save-msg" style="font-size:13px;margin-top:8px;"></div>`:""}
+    </div>`;
+  const list = document.getElementById("games-list");
+  list.innerHTML = week.games.map(g=>{
+    const locked = respectLock && isGameLocked(g,week);
+    const hasPick = !!(picks[g.id] && picks[g.id].side);
+    const capReached = editable && !locked && pickedCount>=PICK_LIMIT && !hasPick;
+    return gameCardHtml(g, picks[g.id]||{}, editable && !locked && !capReached, locked);
+  }).join("");
+  const refreshBtn = document.getElementById("refresh-scores-btn");
+  if(refreshBtn) refreshBtn.onclick = async ()=>{
+    refreshBtn.textContent = "Checking ESPN…"; refreshBtn.disabled = true;
+    try{ await syncWeekResults(week); }catch(e){}
+    renderPickGames(main, week, weekId, picks, forUser, editable, respectLock, useSummaryFlow);
+  };
+  const searchInput = document.getElementById("games-search");
+  if(searchInput){
+    searchInput.oninput = ()=>{
+      const q = searchInput.value.trim().toLowerCase();
+      let visible = 0;
+      week.games.forEach(g=>{
+        const el = document.getElementById("game-"+g.id); if(!el) return;
+        const match = !q || g.away.toLowerCase().includes(q) || g.home.toLowerCase().includes(q);
+        el.style.display = match ? "" : "none";
+        if(match) visible++;
+      });
+      const emptyEl = document.getElementById("games-search-empty");
+      if(emptyEl){ emptyEl.style.display = (q && visible===0) ? "" : "none"; document.getElementById("games-search-empty-term").textContent = q; }
+    };
+  }
+  if(editable){
+    week.games.forEach(g=>{
+      const locked = respectLock && isGameLocked(g,week);
+      if(locked) return;
+      const el = document.getElementById("game-"+g.id); if(!el) return;
+      el.querySelectorAll(".team-btn").forEach(btn=>{
+        btn.onclick = ()=>{ const side=btn.dataset.side; picks[g.id]=picks[g.id]||{}; picks[g.id].side = picks[g.id].side===side?null:side; renderPickGames(main, week, weekId, picks, forUser, editable, respectLock, useSummaryFlow); };
+      });
+    });
+    const doSave = async ()=>{
+      const validIds = new Set(week.games.map(g=>g.id));
+      const clean={}; for(const [gid,p] of Object.entries(picks)){ if(p && p.side && validIds.has(gid)) clean[gid]=p; }
+      const msgEl = document.getElementById("save-msg");
+      const msgElTop = document.getElementById("save-msg-top");
+      if(Object.keys(clean).length !== PICK_LIMIT){
+        const errTxt = `Pick exactly ${PICK_LIMIT} games — you have ${Object.keys(clean).length}.`;
+        if(msgEl){ msgEl.textContent = errTxt; msgEl.style.color = "var(--red)"; }
+        if(msgElTop){ msgElTop.textContent = errTxt; msgElTop.style.color = "var(--red)"; }
+        return;
+      }
+      await savePicksFor(weekId, forUser, clean);
+      await logPickActivity(weekId, forUser, Object.keys(clean).length, forUser===ME ? forUser : ME);
+      if(useSummaryFlow){
+        PICKS_VIEW_MODE = "summary";
+        renderPickGames(main, week, weekId, clean, forUser, editable, respectLock, useSummaryFlow);
+      } else {
+        if(msgEl){ msgEl.textContent = "Saved."; msgEl.style.color = "var(--field)"; }
+        if(msgElTop){ msgElTop.textContent = "Saved."; msgElTop.style.color = "var(--field)"; }
+      }
+    };
+    const doCancel = async ()=>{
+      if(useSummaryFlow){
+        await renderPicksPage(main);
+      } else {
+        await renderTimeTravel(main);
+      }
+    };
+    document.getElementById("save-picks-btn").onclick = doSave;
+    const cancelBtn = document.getElementById("cancel-picks-btn");
+    if(cancelBtn) cancelBtn.onclick = doCancel;
+    const saveBtnTop = document.getElementById("save-picks-btn-top");
+    if(saveBtnTop) saveBtnTop.onclick = doSave;
+    const cancelBtnTop = document.getElementById("cancel-picks-btn-top");
+    if(cancelBtnTop) cancelBtnTop.onclick = doCancel;
+  }
+}
+
+async function fetchLiveWinProbs(week, picks, liveScores){
+  const winProbMap = {};
+  const liveGames = week.games.filter(g=> picks[g.id] && picks[g.id].side && g.espnId && liveScores[g.espnId] && liveScores[g.espnId].state==="in");
+  await Promise.all(liveGames.map(async g=>{
+    try{ winProbMap[g.espnId] = await getWinProbCached(week.sport, g.espnId); }catch(e){}
+  }));
+  return winProbMap;
+}
+
+async function renderPicksSummary(main, week, weekId, picks, forUser, respectLock){
+  const pickedCount = week.games.filter(g=>picks[g.id] && picks[g.id].side).length;
+  const cutoff = weekSaturdayCutoff(week);
+  // Once everything remaining has locked (11am CDT Saturday), there's nothing left to edit —
+  // hide the Edit picks button entirely instead of dropping the user into a fully-locked form.
+  const pastCutoff = respectLock && cutoff && Date.now() >= cutoff.getTime();
+  const editBtnHtml = pastCutoff ? "" : `<button class="btn gold" id="edit-picks-btn" style="width:100%;margin-top:10px;">Edit picks</button>`;
+  const editBtnTopHtml = pastCutoff ? "" : `<button class="btn gold" id="edit-picks-btn-top" style="width:100%;margin-bottom:10px;">Edit picks</button>`;
+  main.innerHTML = `
+    <div class="card">
+      <h2 class="card-title">${esc(weekLabel(week))}</h2>
+      <p class="card-sub">${pickedCount}/${PICK_LIMIT} games picked</p>
+      ${editBtnTopHtml}
+      ${respectLock?`<button class="btn ghost sm" id="summary-refresh-btn" style="margin-bottom:10px;">↻ Refresh live scores</button>`:""}
+      <div id="summary-list"></div>
+      ${editBtnHtml}
+    </div>`;
+  let liveScores = {}, winProbMap = {}, leagueUnion = null;
+  if(respectLock && week.startDate && week.endDate){
+    try{ liveScores = await getEspnScoresCached(week.startDate, week.endDate); }catch(e){}
+    try{ winProbMap = await fetchLiveWinProbs(week, picks, liveScores); }catch(e){}
+  }
+  if(respectLock && cutoff && Date.now() >= cutoff.getTime()){
+    try{ leagueUnion = await loadLeaguePickedGameIds(weekId); }catch(e){ leagueUnion = null; }
+  }
+  renderPicksSummaryList(week, weekId, picks, respectLock, liveScores, winProbMap, leagueUnion);
+  const refreshBtn = document.getElementById("summary-refresh-btn");
+  const doRefresh = async (manual)=>{
+    if(manual){ refreshBtn.textContent = "Checking ESPN…"; refreshBtn.disabled = true; }
+    try{ await syncWeekResults(week); }catch(e){}
+    if(week.startDate && week.endDate){
+      try{ liveScores = await getEspnScoresCached(week.startDate, week.endDate, true); }catch(e){}
+      try{ winProbMap = await fetchLiveWinProbs(week, picks, liveScores); }catch(e){}
+    }
+    if(respectLock && cutoff && Date.now() >= cutoff.getTime()){
+      try{ leagueUnion = await loadLeaguePickedGameIds(weekId); }catch(e){}
+    }
+    renderPicksSummaryList(week, weekId, picks, respectLock, liveScores, winProbMap, leagueUnion);
+    if(manual){ refreshBtn.textContent = "↻ Refresh live scores"; refreshBtn.disabled = false; }
+  };
+  if(refreshBtn) refreshBtn.onclick = ()=> doRefresh(true);
+  // Auto-refresh every 20s while this summary is open and at least one picked game hasn't
+  // gotten a result yet — keeps score, clock, quarter and the field-position bar moving on
+  // their own instead of requiring a manual tap. Stops itself once every picked game is final,
+  // and gets cleared whenever the user navigates away (renderMain / renderPickGames).
+  if(respectLock){
+    const hasUnresolved = week.games.some(g=> picks[g.id] && picks[g.id].side && g.espnId && !g.result);
+    if(hasUnresolved) LIVE_POLL_TIMER = setInterval(()=>{ doRefresh(false); }, 20000);
+  }
+  const goEdit = ()=>{
+    PICKS_VIEW_MODE = "edit";
+    renderPickGames(main, week, weekId, picks, forUser, true, respectLock, true);
+  };
+  const editBtn = document.getElementById("edit-picks-btn");
+  if(editBtn) editBtn.onclick = goEdit;
+  const editBtnTop = document.getElementById("edit-picks-btn-top");
+  if(editBtnTop) editBtnTop.onclick = goEdit;
+}
+async function loadLeaguePickedGameIds(weekId){
+  const rows = await loadAllPicksForWeek(weekId);
+  const set = new Set();
+  rows.forEach(r=>{
+    const p = r.picks || {};
+    Object.entries(p).forEach(([gid,v])=>{ if(v && v.side) set.add(gid); });
+  });
+  return set;
+}
+
+function formatKickoffCentral(iso){
+  if(!iso) return "Kickoff TBD";
+  const d = new Date(iso);
+  return new Intl.DateTimeFormat("en-US", {timeZone:"America/Chicago", weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZoneName:"short"}).format(d);
+}
+function quarterLabel(period){
+  if(period==null) return "—";
+  if(period<=4) return "Q"+period;
+  return period===5 ? "OT" : "OT"+(period-4);
+}
+function fieldPositionBar(live, awayName, homeName){
+  if(live.yardLine==null) return "";
+  // ESPN's situation.yardLine is always measured from the HOME team's own goal line:
+  // 0 = home's own goal, 100 = away's own goal — regardless of who has the ball.
+  const pct = Math.max(0, Math.min(100, live.yardLine));
+  // "at TEAM ##" only describes whose side of the field the ball is on, NOT who has it —
+  // ESPN's own convention is field position labeled by territory, so a team can be shown
+  // "at [opponent] 19" while the OTHER team is actually on offense. Show who has the ball
+  // as its own explicit line so it's never ambiguous.
+  const fieldLabel = live.possessionText || (live.possessionAbbr!=null ? `${live.possessionAbbr} ${Math.round(live.possessionSide==="away" ? 100-pct : pct)}` : null);
+  const offenseName = live.possessionSide==="home" ? homeName : live.possessionSide==="away" ? awayName : null;
+  const accent = live.isRedZone ? "#ef4444" : "#5b8def";
+  // Fill from the possessing team's own goal line up to their current spot, so the empty
+  // track always shows exactly how much field is left between them and the end zone
+  // they're driving toward — never anything filled beyond the marker.
+  let fillLeft, fillWidth;
+  if(live.possessionSide==="away"){ fillLeft = pct; fillWidth = 100-pct; }
+  else { fillLeft = 0; fillWidth = pct; } // home possession, or unknown side defaults to this
+  const gradientDir = live.possessionSide==="away" ? "to left" : "to right";
+  const label = [offenseName?`🏈 ${esc(offenseName)}`:"", fieldLabel?esc(fieldLabel):""].filter(Boolean).join(" — ");
+  return `
+    <div style="margin-top:7px;">
+      ${label?`<div style="text-align:center;font-family:'Barlow Condensed';font-weight:800;font-size:15px;letter-spacing:0.02em;color:${accent};">${label}</div>`:""}
+      <div style="position:relative;height:14px;margin-top:${label?"5px":"0"};">
+        <div style="position:absolute;top:6px;left:0;right:0;height:2px;border-radius:1px;
+          background-color:var(--line);
+          background-image:repeating-linear-gradient(to right, rgba(255,255,255,0.35) 0, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 4%);"></div>
+        <div style="position:absolute;top:6px;left:${fillLeft}%;height:2px;width:${fillWidth}%;border-radius:1px;
+          background:linear-gradient(${gradientDir}, transparent, ${accent});"></div>
+        <div style="position:absolute;top:1px;left:${pct}%;width:2px;height:12px;border-radius:1px;background:${accent};transform:translateX(-1px);box-shadow:0 0 6px ${accent};"></div>
+      </div>
+    </div>`;
+}
+let EXPANDED_STATS_GAME = null;
+async function loadAllPicksForWeek(weekId){
+  const rows = await sb("/rest/v1/bma_picks?week_id=eq."+encodeURIComponent(weekId)+"&select=username,picks");
+  return rows || [];
+}
+
+// ---------- All Picks ----------
+async function fetchLiveWinProbsAll(week, allPicksRows, liveScores){
+  const winProbMap = {};
+  const pickedGameIds = new Set();
+  allPicksRows.forEach(r=>{
+    const p = r.picks || {};
+    Object.entries(p).forEach(([gid,v])=>{ if(v && v.side) pickedGameIds.add(gid); });
+  });
+  const liveGames = week.games.filter(g=> pickedGameIds.has(g.id) && g.espnId && liveScores[g.espnId] && liveScores[g.espnId].state==="in");
+  await Promise.all(liveGames.map(async g=>{
+    try{ winProbMap[g.espnId] = await getWinProbCached(week.sport, g.espnId); }catch(e){}
+  }));
+  return winProbMap;
+}
+async function renderAllPicksPage(main){
+  const weekId = STATE.currentWeek;
+  const week = weekId ? STATE.weeks[weekId] : null;
+  if(!week){ main.innerHTML = `<div class="empty"><div class="disp">No week is live yet</div>Check back once the commissioners set a live week.</div>`; return; }
+  main.innerHTML = `
+    <div class="card">
+      <h2 class="card-title">${esc(weekLabel(week))}</h2>
+      <p class="card-sub">Everyone's picks, revealed once each game locks at kickoff.</p>
+      ${(week.startDate && week.endDate)?`<button class="btn ghost sm" id="allpicks-refresh-btn" style="margin-bottom:10px;">↻ Refresh live scores</button>`:""}
+      <div id="allpicks-list"></div>
+    </div>`;
+  const allPicksRows = await loadAllPicksForWeek(weekId);
+  let liveScores = {}, winProbMap = {};
+  if(week.startDate && week.endDate){
+    try{ liveScores = await getEspnScoresCached(week.startDate, week.endDate); }catch(e){}
+    try{ winProbMap = await fetchLiveWinProbsAll(week, allPicksRows, liveScores); }catch(e){}
+  }
+  renderAllPicksList(week, allPicksRows, liveScores, winProbMap);
+  const refreshBtn = document.getElementById("allpicks-refresh-btn");
+  if(refreshBtn) refreshBtn.onclick = async ()=>{
+    refreshBtn.textContent = "Checking ESPN…"; refreshBtn.disabled = true;
+    try{ await syncWeekResults(week); }catch(e){}
+    try{ liveScores = await getEspnScoresCached(week.startDate, week.endDate, true); }catch(e){}
+    try{ winProbMap = await fetchLiveWinProbsAll(week, allPicksRows, liveScores); }catch(e){}
+    renderAllPicksList(week, allPicksRows, liveScores, winProbMap);
+    refreshBtn.textContent = "↻ Refresh live scores"; refreshBtn.disabled = false;
+  };
+}
+function renderAllPicksList(week, allPicksRows, liveScores, winProbMap){
+  winProbMap = winProbMap || {};
+  const list = document.getElementById("allpicks-list"); if(!list) return;
+  const byUser = {}; allPicksRows.forEach(r=>{ byUser[r.username] = r.picks || {}; });
+  const usernames = Object.keys(STATE.users).sort((a,b)=>{
+    if(a===ME && b!==ME) return -1;
+    if(b===ME && a!==ME) return 1;
+    return a.localeCompare(b, undefined, {sensitivity:"base"});
+  });
+  list.innerHTML = usernames.map(uname=>{
+    const picks = byUser[uname] || {};
+    const rows = Object.entries(picks)
+      .filter(([gid,p])=> p && p.side && week.games.some(g=>g.id===gid))
+      .map(([gid,p])=> ({g: week.games.find(x=>x.id===gid), side:p.side}))
+      .sort((a,b)=> (a.g.kickoff?new Date(a.g.kickoff):0) - (b.g.kickoff?new Date(b.g.kickoff):0));
+
+    if(!rows.length){
+      return `<div style="padding:12px 0;border-bottom:1px solid var(--line);">
+        <div style="font-size:15px;font-weight:700;">${esc(uname)}</div>
+        <div style="font-size:12.5px;color:var(--text-dim);margin-top:2px;">No picks submitted yet</div>
+      </div>`;
+    }
+
+    const revealedRows = rows.map(({g,side})=>{
+      const locked = isGameLocked(g, week);
+      const sideTeam = side === "home" ? g.home : g.away;
+      const oppTeam = side === "home" ? g.away : g.home;
+      const spreadTxt = side===g.favorite ? `-${g.spread}` : `+${g.spread}`;
+
+      let cover = g.result ? coverResult(g, side) : null;
+      let liveBlock = "";
+      let rowBg = "";
+      if(g.result){
+        liveBlock = `<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Final: ${esc(g.away)} ${g.result.awayScore} — ${esc(g.home)} ${g.result.homeScore}</div>`;
+      }
+      const live = (!g.result && g.espnId) ? liveScores[g.espnId] : null;
+      const started = !!g.result || locked || !!(live && (live.state==="in" || live.state==="post"));
+      if(!started && uname!==ME) return null; // don't even reveal which game — that's info too
+
+      if(live && live.state==="in" && live.homeScore!=null && live.awayScore!=null){
+        cover = coverResult(g, side, live);
+        rowBg = cover==="win" ? "rgba(27,67,50,0.35)" : cover==="loss" ? "rgba(179,38,30,0.22)" : "";
+        liveBlock = `
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:0.04em;"><span class="live-dot"></span>LIVE</span>
+            <span style="font-family:'Barlow Condensed';font-weight:800;font-size:21px;color:var(--text);letter-spacing:0.01em;">${esc(g.away)} ${live.awayScore} – ${esc(g.home)} ${live.homeScore}</span>
+          </div>`;
+      } else if(!cover && !locked){
+        liveBlock = `<div style="font-size:11.5px;color:var(--text-dim);margin-top:2px;">${esc(formatKickoffCentral(g.kickoff))}</div>`;
+      } else if(!cover && locked){
+        liveBlock = `<div style="font-size:11.5px;color:var(--text-dim);margin-top:2px;">${esc(formatKickoffCentral(g.kickoff))}</div>`;
+      }
+
+      const isFinal = !!g.result;
+      const tagLabel = cover ? (isFinal ? cover : (cover==="win"?"winning":cover==="loss"?"losing":cover)) : null;
+
+      return `<div style="padding:9px 0;border-bottom:1px solid var(--line);${rowBg?`background:${rowBg};border-radius:3px;padding-left:6px;padding-right:6px;margin:0 -6px;`:""}">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;"><strong>${esc(sideTeam)}</strong> <span style="color:var(--text-dim);">${spreadTxt} vs ${esc(oppTeam)}</span></span>
+          ${tagLabel?`<span class="result-tag ${cover}">${tagLabel}</span>`:(locked?`<span class="result-tag locked-tag" style="font-size:10px;">🔒 LOCKED</span>`:"")}
+        </div>
+        ${liveBlock}
+      </div>`;
+    }).filter(Boolean);
+    const hiddenCount = rows.length - revealedRows.length;
+    const rowsHtml = revealedRows.join("") + (hiddenCount ? `<div style="padding:6px 0;font-size:12.5px;color:var(--text-dim);">🔒 ${hiddenCount} more pick${hiddenCount===1?"":"s"} not yet revealed</div>` : "");
+
+    return `<div style="padding:12px 0;border-bottom:1px solid var(--line);">
+      <div style="font-size:15px;font-weight:700;">${esc(uname)} <span style="font-size:12px;color:var(--text-dim);font-weight:400;">(${rows.length}/${PICK_LIMIT})</span></div>
+      <div style="margin-top:6px;">${rowsHtml}</div>
+    </div>`;
+  }).join("");
+}
+function renderPicksSummaryList(week, weekId, picks, respectLock, liveScores, winProbMap, leagueUnion){
+  winProbMap = winProbMap || {};
+  const list = document.getElementById("summary-list");
+  if(!list) return;
+  const cutoff = weekSaturdayCutoff(week);
+  const fullyLocked = respectLock && cutoff && Date.now() >= cutoff.getTime();
+  const gamesToShow = (fullyLocked && leagueUnion) ? week.games.filter(g=> leagueUnion.has(g.id)) : week.games;
+  list.innerHTML = gamesToShow.map(g=>{
+    const p = picks[g.id];
+    const locked = respectLock && isGameLocked(g,week);
+    if(!p || !p.side){
+      const live0 = g.espnId ? liveScores[g.espnId] : null;
+      const started0 = !!g.result || locked || !!(live0 && (live0.state==="in" || live0.state==="post"));
+      const expanded0 = EXPANDED_STATS_GAME===g.id;
+      return `<div id="summary-row-${g.id}" style="padding:9px 12px;margin:0 -12px;border-bottom:1px solid var(--line);${started0?"cursor:pointer;":""}" ${started0?`data-stats-toggle="${g.id}"`:""}>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:14px;color:var(--text-dim);">${esc(g.away)} @ ${esc(g.home)}</span>
+          <span class="result-tag nopick">NO PICK</span>
+        </div>
+        ${started0?`<div style="font-size:11px;color:var(--gold);margin-top:4px;">${expanded0?"▲ hide":"▼"} pool picks</div>`:""}
+        <div id="stats-${g.id}" style="${expanded0?"":"display:none;"}">${expanded0?`<div style="font-size:12px;color:var(--text-dim);padding-top:6px;">Loading pool picks…</div>`:""}</div>
+      </div>`;
+    }
+    const sideTeam = p.side==="home"?g.home:g.away;
+    const oppTeam = p.side==="home"?g.away:g.home;
+    const spreadTxt = p.side===g.favorite ? `-${g.spread}` : `+${g.spread}`;
+
+    let cover = g.result ? coverResult(g,p.side) : null;
+    let liveBlock = "";
+    let rowBg = "";
+    if(g.result){
+      liveBlock = `<div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Final: ${esc(g.away)} ${g.result.awayScore} — ${esc(g.home)} ${g.result.homeScore}</div>`;
+    }
+    const live = (!cover && g.espnId) ? liveScores[g.espnId] : null;
+    if(live && live.state==="in" && live.homeScore!=null && live.awayScore!=null){
+      cover = coverResult(g, p.side, live);
+      rowBg = cover==="win" ? "rgba(27,67,50,0.35)" : cover==="loss" ? "rgba(179,38,30,0.22)" : "";
+      const wp = winProbMap[g.espnId];
+      // The batched scoreboard feed sometimes leaves the whole situation (possession team,
+      // yard line, down/distance) out for a specific game. When that happens, fall back to
+      // the fuller per-game situation read alongside win probability for this same game.
+      const sf = wp && wp.situationFallback;
+      const liveForBar = sf ? {
+        yardLine: live.yardLine!=null ? live.yardLine : sf.yardLine,
+        possessionText: live.possessionText || sf.possessionText,
+        possessionAbbr: live.possessionAbbr || sf.possessionAbbr,
+        possessionSide: live.possessionSide || sf.possessionSide,
+        isRedZone: live.isRedZone || sf.isRedZone,
+      } : live;
+      const downDistanceText = live.downDistanceText || (sf && sf.downDistanceText) || null;
+      liveBlock = `
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
+          <span style="display:inline-flex;align-items:center;gap:4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;letter-spacing:0.04em;"><span class="live-dot"></span>LIVE</span>
+          <span style="font-family:'Barlow Condensed';font-weight:800;font-size:21px;color:var(--text);letter-spacing:0.01em;">${esc(g.away)} ${live.awayScore} – ${esc(g.home)} ${live.homeScore}</span>
+          ${downDistanceText?`<span style="font-size:12px;color:var(--gold);">${esc(downDistanceText)}</span>`:""}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;font-size:11.5px;color:var(--text-dim);margin-top:3px;">
+          <span>Quarter: ${quarterLabel(live.period)}</span>
+          <span>Time: ${esc(live.displayClock||"—")}</span>
+        </div>` + fieldPositionBar(liveForBar, g.away, g.home) + (()=>{
+          let out = "";
+          if(wp){
+            const pctForSide = p.side==="home" ? wp.homeWinPct : wp.awayWinPct;
+            out += `<div style="font-size:11.5px;color:var(--text-dim);margin-top:4px;">ESPN win probability for ${esc(sideTeam)}: <strong style="color:var(--text);">${pctForSide}%</strong> <span style="opacity:0.75;">(to win the game outright — not spread-adjusted)</span></div>`;
+            if(wp.homeCoverPct!=null){
+              const coverPct = p.side==="home" ? wp.homeCoverPct : wp.awayCoverPct;
+              out += `<div style="font-size:11.5px;color:var(--gold);margin-top:2px;">ESPN cover probability for ${esc(sideTeam)}: <strong>${coverPct}%</strong> <span style="opacity:0.75;">(to cover ${spreadTxt})</span></div>`;
+            }
+          }
+          return out;
+        })();
+    } else if(!cover && !locked){
+      liveBlock = `<div style="font-size:11.5px;color:var(--text-dim);margin-top:2px;">${esc(formatKickoffCentral(g.kickoff))}</div>`;
+    }
+
+    const started = !!g.result || !!(live && (live.state==="in" || live.state==="post"));
+    const expanded = EXPANDED_STATS_GAME===g.id;
+    const isFinal = !!g.result;
+    const tagLabel = cover ? (isFinal ? cover : (cover==="win"?"winning":cover==="loss"?"losing":cover)) : null;
+
+    return `<div id="summary-row-${g.id}" style="padding:9px 12px;margin:0 -12px;border-bottom:1px solid var(--line);${rowBg?`background:${rowBg};border-radius:3px;`:""}${started?"cursor:pointer;":""}" ${started?`data-stats-toggle="${g.id}"`:""}>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:14px;"><strong>${esc(sideTeam)}</strong> <span style="color:var(--text-dim);">${spreadTxt} vs ${esc(oppTeam)}</span></span>
+        ${tagLabel?`<span class="result-tag ${cover}">${tagLabel}</span>`:(locked?`<span class="result-tag locked-tag">🔒 LOCKED</span>`:(g.kickoff?"":`<span style="font-size:11px;color:var(--text-dim);">pending</span>`))}
+      </div>
+      ${liveBlock}
+      ${started?`<div style="font-size:11px;color:var(--gold);margin-top:4px;">${expanded?"▲ hide":"▼"} pool picks</div>`:""}
+      <div id="stats-${g.id}" style="${expanded?"":"display:none;"}">${expanded?`<div style="font-size:12px;color:var(--text-dim);padding-top:6px;">Loading pool picks…</div>`:""}</div>
+    </div>`;
+  }).join("");
+
+  list.querySelectorAll("[data-stats-toggle]").forEach(row=>{
+    row.onclick = async ()=>{
+      const gid = row.dataset.statsToggle;
+      EXPANDED_STATS_GAME = (EXPANDED_STATS_GAME===gid) ? null : gid;
+      renderPicksSummaryList(week, weekId, picks, respectLock, liveScores, winProbMap, leagueUnion);
+      if(EXPANDED_STATS_GAME!==gid) return;
+      const panel = document.getElementById("stats-"+gid);
+      if(!panel) return;
+      try{
+        const g = week.games.find(x=>x.id===gid);
+        const allPicks = await loadAllPicksForWeek(weekId);
+        const usernames = Object.keys(STATE.users);
+        const totalMembers = usernames.length;
+        const homeVoters = [], awayVoters = [];
+        allPicks.forEach(row2=>{
+          const gp = row2.picks ? row2.picks[gid] : null;
+          if(gp && gp.side==="home") homeVoters.push(row2.username);
+          else if(gp && gp.side==="away") awayVoters.push(row2.username);
+        });
+        const pct = n => totalMembers ? Math.round((n/totalMembers)*100) : 0;
+        panel.innerHTML = `
+          <div style="padding-top:8px;border-top:1px dashed var(--line);margin-top:6px;">
+            <div style="font-size:13px;margin-bottom:4px;"><strong>${esc(g.away)}</strong>: ${awayVoters.length} pick${awayVoters.length===1?"":"s"} (${pct(awayVoters.length)}% of pool)</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px;">${awayVoters.length?awayVoters.map(esc).join(", "):"—"}</div>
+            <div style="font-size:13px;margin-bottom:4px;"><strong>${esc(g.home)}</strong>: ${homeVoters.length} pick${homeVoters.length===1?"":"s"} (${pct(homeVoters.length)}% of pool)</div>
+            <div style="font-size:12px;color:var(--text-dim);">${homeVoters.length?homeVoters.map(esc).join(", "):"—"}</div>
+          </div>`;
+      }catch(err){
+        panel.innerHTML = `<div style="font-size:12px;color:var(--red);padding-top:6px;">Couldn't load pool picks.</div>`;
+      }
+    };
+  });
+}
+function gameCardHtml(g, pick, editable, locked){
+  const spreadTxt = `-${g.spread}`;
+  const result = g.result;
+  const awayCover = result ? coverResult(g,"away") : null;
+  const homeCover = result ? coverResult(g,"home") : null;
+  return `
+    <div class="game" id="game-${g.id}">
+      <div class="game-head">
+        <span>${esc(g.dayLabel||"")} ${g.kickoff?"· "+new Date(g.kickoff).toLocaleString(undefined,{weekday:'short',hour:'numeric',minute:'2-digit'}):""}</span>
+        ${locked?`<span class="result-tag locked-tag">🔒 LOCKED</span>`:""}
+      </div>
+      <div class="game-body">
+        <div class="matchup">
+          <button class="team-btn ${pick.side==='away'?'selected':''} ${pick.side==='away' && awayCover==='loss'?'lost':''}" data-side="away" ${editable?"":"disabled"}>
+            <span class="name">${esc(g.away)}</span><span class="spread">${g.favorite==='away'?spreadTxt:'+'+g.spread}</span>
+            ${result?`<span class="result-tag ${awayCover}" style="margin-top:4px;width:fit-content;">${awayCover}</span>`:""}
+          </button>
+          <button class="team-btn ${pick.side==='home'?'selected':''} ${pick.side==='home' && homeCover==='loss'?'lost':''}" data-side="home" ${editable?"":"disabled"}>
+            <span class="name">${esc(g.home)}</span><span class="spread">${g.favorite==='home'?spreadTxt:'+'+g.spread}</span>
+            ${result?`<span class="result-tag ${homeCover}" style="margin-top:4px;width:fit-content;">${homeCover}</span>`:""}
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ---------- Leaderboard ----------
+let LB_MODE="season", LB_WEEK=null, LB_PROJECTION="none"; // LB_PROJECTION: 'none' | 'score' | 'prob'
+
+function buildHypoOutcomesFromLive(week, liveScores){
+  const outcomes = {};
+  week.games.forEach(g=>{
+    if(g.result) return;
+    const live = g.espnId ? liveScores[g.espnId] : null;
+    if(live && live.state==="in" && live.homeScore!=null && live.awayScore!=null){
+      const favCover = coverResult(g, g.favorite, live);
+      if(favCover==="win") outcomes[g.id]="favorite";
+      else if(favCover==="loss") outcomes[g.id]="dog";
+      else if(favCover==="push") outcomes[g.id]="push";
+    }
+  });
+  return outcomes;
+}
+// Best-effort: fetches live ESPN cover probability for every in-progress game in
+// the week (not scoped to one user), so it can be applied across everyone on the
+// leaderboard. Same fragile, may-be-empty data source as the My Picks cover% line.
+async function fetchCoverProbsForWeek(week, liveScores){
+  const coverMap = {};
+  const liveGames = week.games.filter(g=> g.espnId && liveScores[g.espnId] && liveScores[g.espnId].state==="in");
+  await Promise.all(liveGames.map(async g=>{
+    try{ const cp = await fetchEspnCoverProb(g.espnId); if(cp) coverMap[g.espnId] = cp; }catch(e){}
+  }));
+  return coverMap;
+}
+function buildHypoOutcomesFromCoverProb(week, coverProbMap){
+  const outcomes = {};
+  week.games.forEach(g=>{
+    if(g.result) return;
+    const cp = g.espnId ? coverProbMap[g.espnId] : null;
+    if(!cp) return;
+    const favCoverPct = g.favorite==="home" ? cp.homeCoverPct : cp.awayCoverPct;
+    if(favCoverPct>50) outcomes[g.id]="favorite";
+    else if(favCoverPct<50) outcomes[g.id]="dog";
+  });
+  return outcomes;
+}
+async function fetchLiveScoresForWeek(week){
+  if(!week.startDate || !week.endDate) return {};
+  return await getEspnScoresCached(week.startDate, week.endDate, true);
+}
+// Scores one week for one user, optionally projecting in-progress games in the
+// current live week — either by freezing the live score ('score') or by treating
+// >50% ESPN cover probability as a win ('prob'). Otherwise identical to scoreWeek.
+function scoreWeekHypothetical(week, picks, outcomes){
+  let total=0, wins=0, losses=0, pushes=0; const perGame={};
+  for(const g of week.games){
+    const p = picks[g.id]; if(!p || !p.side) continue;
+    let base;
+    if(g.result){
+      base = coverResult(g, p.side);
+    } else {
+      const outcome = outcomes[g.id];
+      if(!outcome){ perGame[g.id] = {base:"pending", pts:0, side:p.side}; continue; }
+      const pickIsFavorite = p.side === g.favorite;
+      if(outcome==="push") base = "push";
+      else if(outcome==="favorite") base = pickIsFavorite ? "win" : "loss";
+      else base = pickIsFavorite ? "loss" : "win"; // outcome === "dog"
+    }
+    let pts=0;
+    if(base==="win"){ pts=1; wins++; }
+    else if(base==="loss"){ pts=0; losses++; }
+    else if(base==="push"){ pts=0; pushes++; }
+    perGame[g.id] = {base, pts, side:p.side};
+    total += pts;
+  }
+  return {total, wins, losses, pushes, perGame};
+}
+async function scoreWeekForLeaderboard(week, picks, adjustment, mode, cache){
+  if(mode==="score" || mode==="prob"){
+    const outcomes = mode==="score" ? buildHypoOutcomesFromLive(week, cache||{}) : buildHypoOutcomesFromCoverProb(week, cache||{});
+    const s = scoreWeekHypothetical(week, picks, outcomes);
+    s.total += adjustment;
+    return s;
+  }
+  return scoreWeek(week, picks, adjustment);
+}
+async function renderLeaderboardPage(main){
+  if(!LB_WEEK) LB_WEEK = STATE.currentWeek;
+  const weekIds = STATE.weekOrder.filter(id=>STATE.weeks[id].finalized);
+  const usernames = Object.keys(STATE.users);
+  const currentWeekId = STATE.currentWeek;
+  const currentWeekInScope = currentWeekId && (LB_MODE==="season" ? weekIds.includes(currentWeekId) : LB_WEEK===currentWeekId);
+  main.innerHTML = `
+    <div class="card">
+      <h2 class="card-title">Leaderboard</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div class="toggle-group" style="margin-bottom:0;">
+          <button id="lb-week-btn" class="${LB_MODE==='week'?'active':''}">Weekly</button>
+          <button id="lb-season-btn" class="${LB_MODE==='season'?'active':''}">Season</button>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button id="lb-current-toggle" class="btn ${LB_PROJECTION==='score'?'gold':'ghost'} sm" ${currentWeekInScope?"":"disabled"} title="${currentWeekInScope?"":"No live week in view right now"}">${LB_PROJECTION==='score'?"✓ ":""}Current</button>
+          <button id="lb-prob-toggle" class="btn ${LB_PROJECTION==='prob'?'gold':'ghost'} sm" ${currentWeekInScope?"":"disabled"} title="${currentWeekInScope?"":"No live week in view right now"}">${LB_PROJECTION==='prob'?"✓ ":""}Cover Odds</button>
+        </div>
+      </div>
+      ${LB_MODE==='week'?`<div class="field" style="max-width:260px;margin-top:12px;"><label>Week</label>
+        <select id="lb-week-select">${weekIds.map(id=>`<option value="${id}" ${id===LB_WEEK?"selected":""}>${esc(weekOptionLabel(id))}</option>`).join("")}</select></div>`:""}
+      ${LB_PROJECTION==='score' && currentWeekInScope?`<div class="notice" style="margin-top:12px;">Treating ${esc(weekLabel(STATE.weeks[currentWeekId]))}'s in-progress games as if they ended right now. Nothing here is saved.</div>`:""}
+      ${LB_PROJECTION==='prob' && currentWeekInScope?`<div class="notice" style="margin-top:12px;">Treating ${esc(weekLabel(STATE.weeks[currentWeekId]))}'s in-progress games as a win if ESPN currently gives that side better than 50% to cover. Best-effort — some games may lack this data and stay pending. Nothing here is saved.</div>`:""}
+      <div id="lb-table" style="margin-top:14px;"></div>
+    </div>`;
+  document.getElementById("lb-week-btn").onclick=()=>{LB_MODE="week";renderLeaderboardPage(main);};
+  document.getElementById("lb-season-btn").onclick=()=>{LB_MODE="season";renderLeaderboardPage(main);};
+  const curBtn = document.getElementById("lb-current-toggle");
+  if(curBtn && currentWeekInScope) curBtn.onclick=()=>{LB_PROJECTION = LB_PROJECTION==="score" ? "none" : "score"; renderLeaderboardPage(main);};
+  const probBtn = document.getElementById("lb-prob-toggle");
+  if(probBtn && currentWeekInScope) probBtn.onclick=()=>{LB_PROJECTION = LB_PROJECTION==="prob" ? "none" : "prob"; renderLeaderboardPage(main);};
+  const sel=document.getElementById("lb-week-select"); if(sel) sel.onchange=(e)=>{LB_WEEK=e.target.value;renderLeaderboardPage(main);};
+  const tableEl=document.getElementById("lb-table");
+  if(weekIds.length===0){ tableEl.innerHTML=`<div class="empty">No finalized weeks yet.</div>`; return; }
+  const rows=[]; const weeksToScore = LB_MODE==="week"?[LB_WEEK]:weekIds;
+  await Promise.all(weeksToScore.filter(Boolean).map(wid=> syncWeekResults(STATE.weeks[wid]).catch(()=>{})));
+  let projectionCache = null;
+  if(LB_PROJECTION!=="none" && currentWeekInScope){
+    const week = STATE.weeks[currentWeekId];
+    try{
+      if(LB_PROJECTION==="score"){
+        projectionCache = await fetchLiveScoresForWeek(week);
+      } else {
+        const liveScores = await fetchLiveScoresForWeek(week);
+        projectionCache = await fetchCoverProbsForWeek(week, liveScores);
+      }
+    }catch(e){ projectionCache = {}; }
+  }
+  const tasks = [];
+  for(const uname of usernames){
+    for(const wid of weeksToScore){
+      if(!wid) continue;
+      tasks.push((async ()=>{
+        try{
+          const week=STATE.weeks[wid];
+          const [picks, adj] = await Promise.all([loadPicksFor(wid,uname), loadAdjustment(wid, uname)]);
+          const mode = (LB_PROJECTION!=="none" && wid===currentWeekId) ? LB_PROJECTION : "none";
+          const s = await scoreWeekForLeaderboard(week, picks, adj.amount, mode, mode!=="none"?projectionCache:null);
+          return {uname, total:s.total, wins:s.wins, losses:s.losses, pushes:s.pushes};
+        }catch(e){ console.error("Leaderboard scoring failed for", uname, wid, e); return null; }
+      })());
+    }
+  }
+  const results = (await Promise.all(tasks)).filter(Boolean);
+  const byUser = {};
+  for(const uname of usernames) byUser[uname] = {uname, total:0, wins:0, losses:0, pushes:0};
+  for(const r of results){
+    byUser[r.uname].total += r.total; byUser[r.uname].wins += r.wins;
+    byUser[r.uname].losses += r.losses; byUser[r.uname].pushes += r.pushes;
+  }
+  rows.push(...Object.values(byUser));
+  rows.sort((a,b)=>b.total-a.total);
+  tableEl.innerHTML = `<table><thead><tr><th>#</th><th>Player</th><th>Record</th><th style="text-align:right;">Pts</th></tr></thead><tbody>
+    ${rows.map((r,i)=>`<tr class="${r.uname===ME?'me':''}"><td class="rank">${i+1}</td>
+      <td>${esc(r.uname)}${(STATE.commissioners||[]).includes(r.uname)?' <span style="font-size:11px;color:var(--text-dim);">(commish)</span>':''}</td>
+      <td style="color:var(--text-dim);">${r.wins}-${r.losses}${r.pushes?`-${r.pushes}`:""}</td>
+      <td class="pts-cell ${r.total>0?'pos':r.total<0?'neg':''}" style="text-align:right;">${r.total>0?"+":""}${r.total}</td></tr>`).join("")}
+    </tbody></table>`;
+}
+
+// ---------- History ----------
+let HIST_USER=null, HIST_WEEK=null;
+async function renderHistoryPage(main){
+  if(!HIST_USER) HIST_USER=ME;
+  if(!HIST_WEEK) HIST_WEEK=STATE.currentWeek;
+  const usernames=Object.keys(STATE.users);
+  const weekIds=STATE.weekOrder.filter(id=>STATE.weeks[id].finalized);
+  main.innerHTML = `
+    <div class="card">
+      <h2 class="card-title">Pick History</h2>
+      <p class="card-sub">Browse any member's picks, week by week.</p>
+      <div class="row">
+        <div class="field"><label>Member</label><select id="hist-user-select">
+          ${usernames.map(u=>`<option value="${u}" ${u===HIST_USER?"selected":""}>${esc(u)}${u===ME?" (you)":""}</option>`).join("")}
+        </select></div>
+        <div class="field"><label>Week</label><select id="hist-week-select">
+          ${weekIds.length? weekIds.map(id=>`<option value="${id}" ${id===HIST_WEEK?"selected":""}>${esc(weekOptionLabel(id))}</option>`).join("") : `<option>No weeks yet</option>`}
+        </select></div>
+      </div>
+      <div id="hist-body" style="margin-top:14px;"></div>
+    </div>`;
+  document.getElementById("hist-user-select").onchange=(e)=>{HIST_USER=e.target.value;renderHistoryPage(main);};
+  const wsel=document.getElementById("hist-week-select"); if(wsel) wsel.onchange=(e)=>{HIST_WEEK=e.target.value;renderHistoryPage(main);};
+  const body=document.getElementById("hist-body");
+  if(!HIST_WEEK || !STATE.weeks[HIST_WEEK]){ body.innerHTML=`<div class="empty">No finalized weeks yet.</div>`; return; }
+  const week=STATE.weeks[HIST_WEEK];
+  try{ await syncWeekResults(week); }catch(e){}
+  const [picks, adj] = await Promise.all([loadPicksFor(HIST_WEEK,HIST_USER), loadAdjustment(HIST_WEEK, HIST_USER)]);
+  const s=scoreWeek(week,picks,adj.amount);
+  body.innerHTML = `
+    <div class="notice" style="line-height:1.9;">
+      <strong>${esc(HIST_USER)}</strong> — ${esc(weekLabel(week))}<br>
+      Record: ${s.wins}-${s.losses}${s.pushes?`-${s.pushes}`:""} against the spread (wins score their points; losses cost nothing)<br>
+      ${s.adjustment?`Commissioner adjustment: ${s.adjustment>0?"+":""}${s.adjustment} pts<br>`:""}
+      <strong style="font-size:17px;">Week total: ${s.total>0?"+":""}${s.total} pts</strong>
+    </div>
+    <div>${week.games.map(g=>gameCardHtml(g, picks[g.id]||{}, false)).join("")}</div>`;
+}
+
+// ---------- Change Log ----------
+function renderLogPage(main){
+  const visibleLog = STATE.log.filter(e => e.action !== "Result auto-synced from ESPN");
+  main.innerHTML = `<div class="card"><h2 class="card-title">Change Log</h2><p class="card-sub">Changes made once a week is finalized and locked — draft-building isn't logged, only what happens after picks go live. Automatic ESPN score syncs are hidden here.</p>
+    <div class="row">
+      <div class="field"><label>From</label><input type="date" id="log-start"></div>
+      <div class="field"><label>To</label><input type="date" id="log-end"></div>
+    </div>
+    <div id="log-list"></div>
+    </div>`;
+  renderLogList(visibleLog);
+  const apply = ()=>{
+    const startVal = document.getElementById("log-start").value;
+    const endVal = document.getElementById("log-end").value;
+    let filtered = visibleLog;
+    if(startVal){ const startMs = new Date(startVal+"T00:00:00").getTime(); filtered = filtered.filter(e=>e.ts >= startMs); }
+    if(endVal){ const endMs = new Date(endVal+"T23:59:59").getTime(); filtered = filtered.filter(e=>e.ts <= endMs); }
+    renderLogList(filtered);
+  };
+  document.getElementById("log-start").oninput = apply;
+  document.getElementById("log-end").oninput = apply;
+}
+function renderLogList(entries){
+  const el = document.getElementById("log-list"); if(!el) return;
+  el.innerHTML = entries.length===0 ? `<div class="empty">Nothing logged in this range.</div>` :
+    entries.map(entry=>`<div class="log-entry"><div class="log-ts">${fmtTs(entry.ts)} — ${esc(entry.actor||"system")}</div>
+      <div class="log-desc"><strong>${esc(entry.action)}</strong>${entry.detail?" — "+esc(entry.detail):""}</div></div>`).join("");
+}
+
+// ---------- Commissioner ----------
+let COMMISH_DRAFT_WEEK=null, COMMISH_TT_USER=null, COMMISH_TT_WEEK=null;
+
+async function renderCommishPage(main){
+  if(!COMMISH_DRAFT_WEEK && STATE.currentWeek) COMMISH_DRAFT_WEEK = STATE.currentWeek;
+  const weekIds=STATE.weekOrder;
+  main.innerHTML = `
+    <div class="card">
+      <h2 class="card-title">Who's picked this week</h2>
+      <p class="card-sub">${STATE.currentWeek && STATE.weeks[STATE.currentWeek] ? esc(weekLabel(STATE.weeks[STATE.currentWeek])) : "No live week set"}</p>
+      <div id="who-picked-body"></div>
+    </div>
+    <div class="card">
+      <h2 class="card-title">Commissioner</h2>
+      <p class="card-sub">Build the slate off live ESPN games, lock it in, manage results.</p>
+      <div class="row">
+        <div class="field"><label>Week</label><select id="commish-week-select">
+          <option value="__new__">+ Create new week</option>
+          ${weekIds.map(id=>`<option value="${id}" ${id===COMMISH_DRAFT_WEEK?"selected":""}>${esc(weekOptionLabel(id))}</option>`).join("")}
+        </select></div>
+        <div class="field" style="display:flex;align-items:flex-end;"><button class="btn ghost sm" id="set-current-btn" style="width:100%;">Make this the live week</button></div>
+      </div>
+      <div id="commish-week-editor"></div>
+    </div>
+    <div class="card">
+      <h3 class="card-title" style="font-size:18px;">Time Travel</h3>
+      <p class="card-sub">Enter picks on behalf of any member for any week — including Week 0. Logged publicly.</p>
+      <div class="row">
+        <div class="field"><label>Member</label><select id="tt-user-select">${Object.keys(STATE.users).map(u=>`<option value="${u}">${esc(u)}</option>`).join("")}</select></div>
+        <div class="field"><label>Week</label><select id="tt-week-select">${weekIds.map(id=>`<option value="${id}">${esc(weekOptionLabel(id))}</option>`).join("")}</select></div>
+      </div>
+      <button class="btn ghost sm" id="tt-go-btn" style="margin-top:8px;">Open their picks</button>
+      <div id="tt-body" style="margin-top:14px;"></div>
+    </div>`;
+  renderWhoPickedPanel();
+  document.getElementById("commish-week-select").onchange=(e)=>{
+    if(e.target.value==="__new__") startNewWeekDraft(main);
+    else { COMMISH_DRAFT_WEEK=e.target.value; renderCommishWeekEditor(main); }
+  };
+  document.getElementById("set-current-btn").onclick = async ()=>{
+    if(!COMMISH_DRAFT_WEEK){ alert("Pick or create a week first."); return; }
+    await patchLeague({current_week: COMMISH_DRAFT_WEEK});
+    STATE.currentWeek = COMMISH_DRAFT_WEEK;
+    await addLog("Set live week", weekLabel(STATE.weeks[COMMISH_DRAFT_WEEK]));
+    renderCommishPage(main);
+  };
+  document.getElementById("tt-go-btn").onclick=()=>{
+    COMMISH_TT_USER=document.getElementById("tt-user-select").value;
+    COMMISH_TT_WEEK=document.getElementById("tt-week-select").value;
+    renderTimeTravel(main);
+  };
+  if(COMMISH_DRAFT_WEEK && STATE.weeks[COMMISH_DRAFT_WEEK]) renderCommishWeekEditor(main);
+  else startNewWeekDraft(main);
+}
+
+async function renderWhoPickedPanel(){
+  const body = document.getElementById("who-picked-body");
+  if(!body) return;
+  const week = STATE.currentWeek ? STATE.weeks[STATE.currentWeek] : null;
+  if(!week){ body.innerHTML = `<div class="card-sub">Set a live week below to track this.</div>`; return; }
+  const usernames = Object.keys(STATE.users);
+  const rows = await Promise.all(usernames.map(async uname=>{
+    const [picks, activity] = await Promise.all([loadPicksFor(STATE.currentWeek, uname), loadPickActivity(STATE.currentWeek, uname)]);
+    const pickedCount = Object.values(picks).filter(p=>p && p.side).length;
+    const lastSave = activity[0] ? activity[0].ts : null;
+    return {uname, pickedCount, lastSave};
+  }));
+  body.innerHTML = rows.map(r=>{
+    const done = r.pickedCount>0;
+    const complete = r.pickedCount>=PICK_LIMIT;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);">
+      <div style="font-size:14px;">${esc(r.uname)}${r.lastSave?` <span style="color:var(--text-dim);font-size:12px;">· last saved ${fmtTs(new Date(r.lastSave).getTime())}</span>`:""}</div>
+      <span class="result-tag ${complete?'win':done?'push':'loss'}">${complete?"ALL PICKED":done?`${r.pickedCount}/${PICK_LIMIT}`:"NO PICKS"}</span>
+    </div>`;
+  }).join("");
+}
+
+function toYmdLocal(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function startNewWeekDraft(main){
+  const editor=document.getElementById("commish-week-editor");
+  const today = new Date();
+  const defaultEnd = new Date(today); defaultEnd.setDate(defaultEnd.getDate()+4);
+  editor.innerHTML = `
+    <div class="yard-divider"></div>
+    <div class="row">
+      <div class="field"><label>Week #</label><input id="nw-num" type="number" min="0" value="1"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Start date</label><input id="nw-start" type="date" value="${toYmdLocal(today)}"></div>
+      <div class="field"><label>End date</label><input id="nw-end" type="date" value="${toYmdLocal(defaultEnd)}"></div>
+    </div>
+    <p class="card-sub" style="margin-top:6px;">Only games kicking off in this date range (inclusive) get pulled in — set it to match your league's actual Thu\u2013Mon window, not ESPN's own week numbering.</p>
+    <button class="btn sm" id="nw-create-btn" style="margin-top:10px;">Create draft week</button>`;
+  document.getElementById("nw-create-btn").onclick = async ()=>{
+    const sport="ncaaf";
+    const weekNum=Number(document.getElementById("nw-num").value)||0;
+    const startDate=document.getElementById("nw-start").value;
+    const endDate=document.getElementById("nw-end").value;
+    if(!startDate || !endDate){ alert("Set both a start and end date."); return; }
+    const id = sport+"-"+weekNum+"-"+uid().slice(0,4);
+    await sb("/rest/v1/bma_weeks", {method:"POST", prefer:"return=minimal", body: JSON.stringify({id, sport, week_num:weekNum, start_date:startDate, end_date:endDate, finalized:false, locked:false})});
+    STATE.weeks[id] = {sport, week_num:weekNum, startDate, endDate, finalized:false, locked:false, games:[]};
+    STATE.weekOrder.push(id);
+    COMMISH_DRAFT_WEEK=id;
+    renderCommishPage(document.getElementById("main"));
+    loadFullFbsSlate(document.getElementById("main"));
+  };
+}
+
+async function renderCommishWeekEditor(main){
+  const week = STATE.weeks[COMMISH_DRAFT_WEEK];
+  const editor = document.getElementById("commish-week-editor");
+  if(!editor) return;
+  const locked = week.finalized;
+  editor.innerHTML = `
+    <div class="yard-divider"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <strong>${esc(weekLabel(week))}</strong><span class="result-tag ${locked?'loss':'win'}">${locked?"LOCKED":"DRAFT"}</span>
+    </div>
+    ${locked?`<div class="notice">This week is finalized. Unlock to add, remove, or edit games — every change is logged.</div>
+      <button class="btn ghost sm" id="unlock-btn">Unlock &amp; edit</button>`:""}
+    <div id="games-editor" style="margin-top:12px;${locked?"opacity:0.55;pointer-events:none;":""}"></div>
+    <div class="yard-divider"></div>
+    <h4 style="margin:0 0 8px 0;">Bulk update spreads</h4>
+    <p class="card-sub" style="margin-top:0;">One line per game: <code>Team -Spread</code> (the favorite, negative number). Matches by team name against the slate below — handy for backfilling lines ESPN no longer has odds for once games are final.</p>
+    <textarea id="bulk-spread-input" rows="6" placeholder="Rutgers -29.5&#10;UCF -42.5&#10;Wake Forest -27.5"></textarea>
+    <label style="display:flex;align-items:center;gap:8px;padding:8px 0 0 0;font-size:13px;font-weight:400;color:var(--text);margin:0;">
+      <input type="checkbox" id="bulk-spread-prune" style="width:auto;">
+      Remove every other game from this week's slate (keep only games matched above)
+    </label>
+    <button class="btn ghost sm" id="bulk-spread-btn" style="margin-top:8px;">Apply spreads</button>
+    <div id="bulk-spread-msg" style="font-size:13px;margin-top:8px;white-space:pre-wrap;"></div>
+    ${!locked?`
+      <div class="yard-divider"></div>
+      <h4 style="margin:0 0 8px 0;display:flex;justify-content:space-between;align-items:center;">Full FBS slate
+        <button class="btn ghost sm" id="load-slate-btn">↻ Load / refresh from ESPN</button>
+      </h4>
+      <p class="card-sub" style="margin-top:0;">Pulls every FBS game kicking off ${esc(week.startDate||"?")} through ${esc(week.endDate||"?")} with current spreads and adds any new ones below (won't duplicate games already added). Spreads can be edited per game once loaded.</p>
+      <div id="slate-load-msg" style="font-size:13px;margin-bottom:8px;"></div>
+      <div class="yard-divider"></div>
+      <h4 style="margin:0 0 8px 0;">Add manually</h4>
+      <p class="card-sub" style="margin-top:0;">Fallback for a game ESPN's feed missed.</p>
+      <div class="row">
+        <div class="field"><label>Away team</label><input id="ng-away" placeholder="e.g. Clemson"></div>
+        <div class="field"><label>Home team</label><input id="ng-home" placeholder="e.g. Georgia"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label>Favorite</label><select id="ng-fav"><option value="home">Home</option><option value="away">Away</option></select></div>
+        <div class="field"><label>Spread (pts)</label><input id="ng-spread" type="number" step="0.5" min="0" value="3"></div>
+      </div>
+      <button class="btn ghost sm" id="add-game-btn" style="margin-top:8px;">Add game</button>
+      <div class="yard-divider"></div>
+      <button class="btn gold" id="finalize-btn" style="width:100%;">Finalize &amp; lock this week</button>
+      <button class="btn danger sm" id="delete-week-btn" style="width:100%;margin-top:10px;">Delete this draft week</button>
+    `:`<button class="btn gold" id="relock-btn" style="width:100%;margin-top:10px;">Re-lock week</button>`}
+    <div class="yard-divider"></div>
+    <h4 style="margin:0 0 8px 0;">Results</h4>
+    <div id="results-editor"></div>`;
+
+  renderGamesEditor(); renderResultsEditor();
+  if(week.finalized){ syncWeekResults(week).then(changed=>{ if(changed) renderResultsEditor(); }).catch(()=>{}); }
+
+  document.getElementById("bulk-spread-btn").onclick = async ()=>{
+    const text = document.getElementById("bulk-spread-input").value;
+    const msgEl = document.getElementById("bulk-spread-msg");
+    const prune = document.getElementById("bulk-spread-prune").checked;
+    const lines = text.split("\n").map(l=>l.trim()).filter(Boolean);
+    let updated=0; const problems=[]; const matchedIds = new Set();
+    for(const line of lines){
+      const m = line.match(/^(.+?)\s*(-\d+(?:\.\d+)?)$/);
+      if(!m){ problems.push(`Couldn't parse: "${line}" (expected "Team -Spread")`); continue; }
+      const teamName = m[1]; const spread = Math.abs(Number(m[2]));
+      const match = findGameByTeamName(week, teamName);
+      if(!match){ problems.push(`No unique match for "${teamName}"`); continue; }
+      try{
+        await updateGameSpread(match.game.id, match.side, spread);
+        match.game.favorite = match.side; match.game.spread = spread;
+        matchedIds.add(match.game.id);
+        updated++;
+      }catch(err){
+        problems.push(`Save failed for "${teamName}": ${err.message||err}`);
+      }
+    }
+    let removed = 0;
+    if(prune && updated){
+      if(problems.length){
+        msgEl.style.color = "var(--red)";
+        msgEl.textContent = `Updated ${updated} of ${lines.length}, but skipped removal — fix the unmatched line(s) below first so a real game doesn't get deleted by mistake, then re-run.\n`+problems.join("\n");
+        renderGamesEditor();
+        return;
+      }
+      const toRemove = week.games.filter(g=>!matchedIds.has(g.id));
+      for(const g of toRemove){
+        await sb("/rest/v1/bma_games?id=eq."+encodeURIComponent(g.id), {method:"DELETE", prefer:"return=minimal"});
+        removed++;
+      }
+      week.games = week.games.filter(g=>matchedIds.has(g.id));
+    }
+    if(updated || removed) await addLog("Bulk spread update", `${updated} spread(s) updated${removed?`, ${removed} unmatched game(s) removed`:""} for ${weekLabel(week)}`);
+    msgEl.style.color = problems.length ? "var(--red)" : "var(--field)";
+    msgEl.textContent = `Updated ${updated} of ${lines.length}.` + (removed?` Removed ${removed} game${removed===1?"":"s"} not in the list.`:"") + (problems.length ? "\n"+problems.join("\n") : "");
+    renderGamesEditor();
+  };
+
+  if(!locked){
+    document.getElementById("load-slate-btn").onclick = ()=> loadFullFbsSlate(main);
+    document.getElementById("add-game-btn").onclick = async ()=>{
+      const away=document.getElementById("ng-away").value.trim();
+      const home=document.getElementById("ng-home").value.trim();
+      if(!away||!home){ alert("Enter both teams."); return; }
+      const g = { id:uid(), away, home, favorite:document.getElementById("ng-fav").value,
+        spread:Number(document.getElementById("ng-spread").value)||0, points:1,
+        kickoff:null, dayLabel:"", result:null };
+      await addGameToWeek(g);
+      if(week.locked) await addLog("Added game (post-lock)", `${away} @ ${home} — ${weekLabel(week)}`);
+      renderCommishWeekEditor(main);
+    };
+    document.getElementById("finalize-btn").onclick = async ()=>{
+      if(week.games.length===0){ alert("Add at least one game first."); return; }
+      await sb("/rest/v1/bma_weeks?id=eq."+encodeURIComponent(COMMISH_DRAFT_WEEK), {method:"PATCH", prefer:"return=minimal", body: JSON.stringify({finalized:true, locked:true})});
+      week.finalized=true; week.locked=true;
+      await addLog("Finalized week", `${weekLabel(week)} locked with ${week.games.length} game(s).`);
+      renderCommishPage(main);
+    };
+    document.getElementById("delete-week-btn").onclick = async ()=>{
+      if(!confirm(`Delete ${weekLabel(week)}? This can't be undone. It's only allowed while still a draft (never finalized).`)) return;
+      await sb("/rest/v1/bma_weeks?id=eq."+encodeURIComponent(COMMISH_DRAFT_WEEK), {method:"DELETE", prefer:"return=minimal"});
+      delete STATE.weeks[COMMISH_DRAFT_WEEK];
+      STATE.weekOrder = STATE.weekOrder.filter(id=>id!==COMMISH_DRAFT_WEEK);
+      if(STATE.currentWeek===COMMISH_DRAFT_WEEK){ STATE.currentWeek=null; await patchLeague({current_week:null}); }
+      COMMISH_DRAFT_WEEK = null;
+      renderCommishPage(main);
+    };
+  } else {
+    document.getElementById("unlock-btn").onclick = async ()=>{
+      await sb("/rest/v1/bma_weeks?id=eq."+encodeURIComponent(COMMISH_DRAFT_WEEK), {method:"PATCH", prefer:"return=minimal", body: JSON.stringify({finalized:false})});
+      week.finalized=false;
+      await addLog("Unlocked week", weekLabel(week));
+      renderCommishWeekEditor(main);
+    };
+    const relock=document.getElementById("relock-btn");
+    if(relock) relock.onclick = async ()=>{
+      await sb("/rest/v1/bma_weeks?id=eq."+encodeURIComponent(COMMISH_DRAFT_WEEK), {method:"PATCH", prefer:"return=minimal", body: JSON.stringify({finalized:true})});
+      week.finalized=true;
+      await addLog("Re-locked week", weekLabel(week));
+      renderCommishWeekEditor(main);
+    };
+  }
+}
+
+async function loadFullFbsSlate(main){
+  const week = STATE.weeks[COMMISH_DRAFT_WEEK];
+  const btn = document.getElementById("load-slate-btn");
+  const msgEl = document.getElementById("slate-load-msg");
+  if(!week.startDate || !week.endDate){
+    if(msgEl){ msgEl.textContent = "This week has no start/end date set — edit isn't available for weeks created before this feature. Add games manually below."; msgEl.style.color = "var(--red)"; }
+    return;
+  }
+  if(btn){ btn.textContent = "Loading…"; btn.disabled = true; }
+  if(msgEl){ msgEl.textContent = `Fetching FBS games from ${week.startDate} to ${week.endDate}…`; msgEl.style.color = "var(--text-dim)"; }
+  try{
+    const slate = await fetchEspnSlate(week.startDate, week.endDate);
+    const existingIds = new Set(week.games.filter(g=>g.espnId).map(g=>g.espnId));
+    let added = 0;
+    for(const g of slate){
+      if(g.espnId && existingIds.has(g.espnId)) continue;
+      await addGameToWeek({ id:uid(), away:g.away, home:g.home, favorite:g.favorite, spread:g.spread, points:1, kickoff:g.kickoff, dayLabel:g.dayLabel, espnId:g.espnId, result:null });
+      added++;
+    }
+    if(week.locked && added) await addLog("Loaded FBS slate from ESPN (post-lock)", `${added} new game(s) added to ${weekLabel(week)}`);
+    if(msgEl){ msgEl.textContent = added ? `Added ${added} new game${added===1?"":"s"} (${week.games.length} total on the slate).` : `Slate is already up to date (${week.games.length} game${week.games.length===1?"":"s"}).`; msgEl.style.color = "var(--field)"; }
+    renderCommishWeekEditor(main);
+  }catch(err){
+    if(msgEl){ msgEl.textContent = "Couldn't reach ESPN — " + (err.message||String(err)); msgEl.style.color = "var(--red)"; }
+    if(btn){ btn.textContent = "↻ Load / refresh from ESPN"; btn.disabled = false; }
+  }
+}
+
+async function addGameToWeek(g){
+  const week = STATE.weeks[COMMISH_DRAFT_WEEK];
+  await sb("/rest/v1/bma_games", {method:"POST", prefer:"return=minimal", body: JSON.stringify({
+    id:g.id, week_id:COMMISH_DRAFT_WEEK, away:g.away, home:g.home, favorite:g.favorite, spread:g.spread, points:g.points,
+    kickoff:g.kickoff, day_label:g.dayLabel, espn_id:g.espnId||null, has_result:false
+  })});
+  week.games.push(g);
+}
+
+function renderGamesEditor(){
+  const week=STATE.weeks[COMMISH_DRAFT_WEEK]; const el=document.getElementById("games-editor"); if(!el) return;
+  if(week.games.length===0){ el.innerHTML=`<div class="card-sub">No games yet.</div>`; return; }
+  const matchupCounts = {};
+  week.games.forEach(g=>{ const key=(g.away+"@"+g.home).toLowerCase(); matchupCounts[key]=(matchupCounts[key]||0)+1; });
+  const dupeCount = Object.values(matchupCounts).filter(n=>n>1).length;
+  el.innerHTML = `<p class="card-sub" style="margin:0 0 8px 0;">${week.games.length} game${week.games.length===1?"":"s"} on the slate. Edit the favorite/spread and hit Save to override.</p>` +
+    (dupeCount ? `<div class="error" style="margin-bottom:10px;">⚠️ ${dupeCount} matchup${dupeCount===1?" appears":"s appear"} more than once below (duplicate rows, flagged in red) — likely from a slate load earlier. Editing one won't update the other; remove the extra one(s).</div>` : "") +
+    week.games.map(g=>{
+      const key=(g.away+"@"+g.home).toLowerCase();
+      const isDupe = matchupCounts[key]>1;
+      return `
+    <div style="padding:8px 0;border-bottom:1px solid var(--line);${isDupe?"background:rgba(193,39,45,0.12);border-radius:3px;":""}">
+      <div style="font-size:14px;margin-bottom:6px;">${isDupe?"⚠️ ":""}<strong>${esc(g.away)}</strong> @ <strong>${esc(g.home)}</strong> ${isDupe?`<span style="font-size:11px;color:var(--red);">DUPLICATE</span>`:""}</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        <select data-fav="${g.id}" style="width:auto;flex:none;">
+          <option value="home" ${g.favorite==='home'?'selected':''}>${esc(g.home)} favored</option>
+          <option value="away" ${g.favorite==='away'?'selected':''}>${esc(g.away)} favored</option>
+        </select>
+        <input type="number" step="0.5" min="0" value="${g.spread}" data-spread-input="${g.id}" style="width:70px;flex:none;">
+        <button class="btn ghost sm" data-save-spread="${g.id}">Save</button>
+        <button class="btn danger sm" data-rm="${g.id}" style="margin-left:auto;">Remove</button>
+      </div>
+    </div>`;}).join("");
+  el.querySelectorAll("[data-save-spread]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const gid=btn.dataset.saveSpread; const g=week.games.find(x=>x.id===gid);
+      const fav=document.querySelector(`[data-fav="${gid}"]`).value;
+      const spread=Number(document.querySelector(`[data-spread-input="${gid}"]`).value)||0;
+      const original = btn.textContent;
+      btn.disabled = true; btn.textContent = "Saving…";
+      try{
+        await updateGameSpread(gid, fav, spread);
+        g.favorite=fav; g.spread=spread;
+        await addLog("Edited spread", `${g.away} @ ${g.home} — now ${fav==='home'?g.home:g.away} -${spread} (${weekLabel(week)})`);
+        btn.textContent = "Saved ✓";
+        setTimeout(()=>{ if(btn.isConnected){ btn.textContent = original; btn.disabled = false; } }, 1200);
+      }catch(err){
+        btn.textContent = "Failed — retry";
+        btn.disabled = false;
+        alert(`Couldn't save ${g.away} @ ${g.home}: ${err.message||err}`);
+      }
+    };
+  });
+  el.querySelectorAll("[data-rm]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const gid=btn.dataset.rm; const g=week.games.find(x=>x.id===gid);
+      await sb("/rest/v1/bma_games?id=eq."+encodeURIComponent(gid), {method:"DELETE", prefer:"return=minimal"});
+      week.games = week.games.filter(x=>x.id!==gid);
+      if(week.locked) await addLog("Removed game (post-lock)", `${g.away} @ ${g.home} — ${weekLabel(week)}`);
+      renderCommishWeekEditor(document.getElementById("main"));
+    };
+  });
+}
+async function updateGameSpread(gid, favorite, spread){
+  const result = await sb("/rest/v1/bma_games?id=eq."+encodeURIComponent(gid), {method:"PATCH", prefer:"return=representation", body: JSON.stringify({favorite, spread})});
+  if(!result || result.length===0){
+    throw new Error("No matching game found in the database for this row — it may be stale. Reload the page and try again.");
+  }
+  return result[0];
+}
+
+// Team-name aliases for matching pasted picks/lines against ESPN's short names
+// (extend this if other sites use different shorthand).
+const TEAM_ALIASES = { "tu": "texas", "ut": "texas" };
+function findGameByTeamName(week, rawName){
+  const clean = rawName.trim().replace(/^#?\d+\s+/, "").toLowerCase(); // strip leading rank like "24 "
+  const candidates = [clean, TEAM_ALIASES[clean]].filter(Boolean);
+  for(const n of candidates){
+    const exact = week.games.filter(g => g.home.toLowerCase()===n || g.away.toLowerCase()===n);
+    if(exact.length===1) return {game:exact[0], side: exact[0].home.toLowerCase()===n ? "home" : "away"};
+    if(exact.length>1) return null; // ambiguous exact match, bail rather than guess
+  }
+  for(const n of candidates){
+    const loose = week.games.filter(g => g.home.toLowerCase().includes(n) || g.away.toLowerCase().includes(n));
+    if(loose.length===1) return {game:loose[0], side: loose[0].home.toLowerCase().includes(n) ? "home" : "away"};
+  }
+  return null;
+}
+
+function renderResultsEditor(){
+  const week=STATE.weeks[COMMISH_DRAFT_WEEK]; const el=document.getElementById("results-editor"); if(!el) return;
+  if(week.games.length===0){ el.innerHTML=`<div class="card-sub">Add games to enter results.</div>`; return; }
+  el.innerHTML = week.games.map(g=>`
+    <div style="padding:10px 0;border-bottom:1px solid var(--line);">
+      <div style="font-size:14px;margin-bottom:6px;"><strong>${esc(g.away)}</strong> @ <strong>${esc(g.home)}</strong></div>
+      <div class="row">
+        <div class="field" style="margin:0;"><label>${esc(g.away)} score</label><input type="number" id="rs-away-${g.id}" value="${g.result?g.result.awayScore:''}"></div>
+        <div class="field" style="margin:0;"><label>${esc(g.home)} score</label><input type="number" id="rs-home-${g.id}" value="${g.result?g.result.homeScore:''}"></div>
+        <div class="field" style="display:flex;align-items:flex-end;margin:0;"><button class="btn ghost sm" data-save-res="${g.id}" style="width:100%;">Save</button></div>
+      </div>
+    </div>`).join("");
+  el.querySelectorAll("[data-save-res]").forEach(btn=>{
+    btn.onclick = async ()=>{
+      const gid=btn.dataset.saveRes; const g=STATE.weeks[COMMISH_DRAFT_WEEK].games.find(x=>x.id===gid);
+      const a=Number(document.getElementById("rs-away-"+gid).value); const h=Number(document.getElementById("rs-home-"+gid).value);
+      if(isNaN(a)||isNaN(h)){ alert("Enter both scores."); return; }
+      await sb("/rest/v1/bma_games?id=eq."+encodeURIComponent(gid), {method:"PATCH", prefer:"return=minimal", body: JSON.stringify({away_score:a, home_score:h, has_result:true})});
+      g.result = {awayScore:a, homeScore:h};
+      if(STATE.weeks[COMMISH_DRAFT_WEEK].locked) await addLog("Entered result", `${g.away} ${a} — ${g.home} ${h}`);
+      renderResultsEditor();
+    };
+  });
+}
+
+async function renderTimeTravel(main){
+  const body=document.getElementById("tt-body"); const week=STATE.weeks[COMMISH_TT_WEEK];
+  if(!week){ body.innerHTML=`<div class="empty">Pick a week.</div>`; return; }
+  const picks = await loadPicksFor(COMMISH_TT_WEEK, COMMISH_TT_USER);
+  body.innerHTML = `<div class="notice">Editing picks for <strong>${esc(COMMISH_TT_USER)}</strong> — ${esc(weekLabel(week))}. Saving logs a retroactive-pick entry.</div>
+    <label>Bulk-paste picks (one team per line, exactly ${PICK_LIMIT})</label>
+    <textarea id="tt-bulk-input" rows="6" placeholder="Rutgers&#10;Georgia Tech&#10;Indiana"></textarea>
+    <button class="btn ghost sm" id="tt-bulk-btn" style="margin-top:8px;">Apply to picks below</button>
+    <div id="tt-bulk-msg" style="font-size:13px;margin-top:8px;white-space:pre-wrap;"></div>
+    <div class="yard-divider"></div>
+    <div id="tt-games"></div><button class="btn gold sm" id="tt-save-btn" style="margin-top:10px;">Save on their behalf</button>`;
+  renderPickGames(document.getElementById("tt-games"), week, COMMISH_TT_WEEK, picks, COMMISH_TT_USER, true, false);
+  const innerSave=document.getElementById("save-picks-btn"); if(innerSave) innerSave.style.display="none";
+  document.getElementById("tt-bulk-btn").onclick = ()=>{
+    const lines = document.getElementById("tt-bulk-input").value.split("\n").map(l=>l.trim()).filter(Boolean);
+    const msgEl = document.getElementById("tt-bulk-msg");
+    let applied=0; const problems=[];
+    for(const line of lines){
+      const match = findGameByTeamName(week, line);
+      if(!match){ problems.push(`No unique match for "${line}"`); continue; }
+      picks[match.game.id] = {side: match.side};
+      applied++;
+    }
+    msgEl.style.color = problems.length ? "var(--red)" : "var(--field)";
+    msgEl.textContent = `Applied ${applied} of ${lines.length}.` + (problems.length ? "\n"+problems.join("\n") : "") + (applied ? "\nReview below, then Save on their behalf." : "");
+    renderPickGames(document.getElementById("tt-games"), week, COMMISH_TT_WEEK, picks, COMMISH_TT_USER, true, false);
+    const innerSave2=document.getElementById("save-picks-btn"); if(innerSave2) innerSave2.style.display="none";
+  };
+  document.getElementById("tt-save-btn").onclick = async ()=>{
+    const validIds = new Set(week.games.map(g=>g.id));
+    const clean={}; for(const [gid,p] of Object.entries(picks)){ if(p && p.side && validIds.has(gid)) clean[gid]=p; }
+    if(Object.keys(clean).length !== PICK_LIMIT){
+      alert(`Pick exactly ${PICK_LIMIT} games before saving — currently ${Object.keys(clean).length}.`);
+      return;
+    }
+    await savePicksFor(COMMISH_TT_WEEK, COMMISH_TT_USER, clean);
+    await logPickActivity(COMMISH_TT_WEEK, COMMISH_TT_USER, Object.keys(clean).length, ME);
+    await addLog("Set picks on behalf of member", `${COMMISH_TT_USER} — ${weekLabel(week)} (entered by commissioner)`);
+    alert("Saved picks for "+COMMISH_TT_USER);
+  };
+}
+
+// ---------- Score Audit (commissioner) ----------
+let AUDIT_USER=null, AUDIT_WEEK=null;
+async function renderAuditPage(main){
+  if(!AUDIT_USER) AUDIT_USER=ME;
+  if(!AUDIT_WEEK) AUDIT_WEEK=STATE.currentWeek;
+  const usernames = Object.keys(STATE.users);
+  const weekIds = STATE.weekOrder; // commissioner can audit draft weeks too, not just finalized ones
+  main.innerHTML = `
+    <div class="card">
+      <h2 class="card-title">Score Audit</h2>
+      <p class="card-sub">See exactly how a member's score was calculated for a week, and correct it if needed.</p>
+      <div class="row">
+        <div class="field"><label>Member</label><select id="audit-user-select">
+          ${usernames.map(u=>`<option value="${u}" ${u===AUDIT_USER?"selected":""}>${esc(u)}</option>`).join("")}
+        </select></div>
+        <div class="field"><label>Week</label><select id="audit-week-select">
+          ${weekIds.length? weekIds.map(id=>`<option value="${id}" ${id===AUDIT_WEEK?"selected":""}>${esc(weekOptionLabel(id))}</option>`).join("") : `<option>No weeks yet</option>`}
+        </select></div>
+      </div>
+      <div id="audit-body" style="margin-top:14px;"></div>
+    </div>`;
+  document.getElementById("audit-user-select").onchange=(e)=>{AUDIT_USER=e.target.value;renderAuditPage(main);};
+  const wsel=document.getElementById("audit-week-select"); if(wsel) wsel.onchange=(e)=>{AUDIT_WEEK=e.target.value;renderAuditPage(main);};
+  const body=document.getElementById("audit-body");
+  if(!AUDIT_WEEK || !STATE.weeks[AUDIT_WEEK]){ body.innerHTML=`<div class="empty">No weeks yet.</div>`; return; }
+  const week = STATE.weeks[AUDIT_WEEK];
+  const [picks, adj, activity] = await Promise.all([
+    loadPicksFor(AUDIT_WEEK, AUDIT_USER),
+    loadAdjustment(AUDIT_WEEK, AUDIT_USER),
+    loadPickActivity(AUDIT_WEEK, AUDIT_USER)
+  ]);
+  const s = scoreWeek(week, picks, adj.amount);
+
+  const rowsHtml = week.games.map(g=>{
+    const p = picks[g.id];
+    const pg = s.perGame[g.id];
+    if(!p || !p.side){
+      return `<tr><td>${esc(g.away)} @ ${esc(g.home)}</td><td style="color:var(--text-dim);">no pick</td><td>—</td><td style="text-align:right;">0</td></tr>`;
+    }
+    const sideTeam = p.side==="home"?g.home:g.away;
+    const cover = pg ? pg.base : (g.result? coverResult(g,p.side) : "pending");
+    const displayPts = pg ? pg.pts : null;
+    return `<tr>
+      <td>${esc(g.away)} @ ${esc(g.home)}</td>
+      <td>${esc(sideTeam)}</td>
+      <td>${cover||"pending"}</td>
+      <td style="text-align:right;" class="${displayPts>0?'pts-cell pos':displayPts<0?'pts-cell neg':''}">${displayPts!=null?(displayPts>0?"+":"")+displayPts:"—"}</td>
+    </tr>`;
+  }).join("");
+
+  body.innerHTML = `
+    <table>
+      <thead><tr><th>Game</th><th>Picked</th><th>Result</th><th style="text-align:right;">Pts</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    <div class="yard-divider"></div>
+    <div style="font-size:14px;line-height:1.9;">
+      Record: ${s.wins}-${s.losses}${s.pushes?`-${s.pushes}`:""}<br>
+      Commissioner adjustment: ${s.adjustment>0?"+":""}${s.adjustment}${adj.note?` — "${esc(adj.note)}"`:""}<br>
+      <strong style="font-size:18px;">Total: ${s.total>0?"+":""}${s.total}</strong>
+    </div>
+    <div class="yard-divider"></div>
+    <h4 style="margin:0 0 8px 0;">Manual adjustment</h4>
+    <p class="card-sub" style="margin-top:0;">Adds or subtracts points directly, on top of everything above. Applies to the leaderboard and history everywhere.</p>
+    <div class="row">
+      <div class="field"><label>Adjustment (+/-)</label><input type="number" id="audit-adj-amount" value="${adj.amount}"></div>
+      <div class="field"><label>Reason (optional)</label><input type="text" id="audit-adj-note" value="${esc(adj.note)}" placeholder="e.g. scoring error on game 3"></div>
+    </div>
+    <button class="btn gold sm" id="audit-adj-save" style="margin-top:8px;">Save adjustment</button>
+    <div id="audit-adj-msg" style="font-size:13px;margin-top:8px;"></div>
+    <div class="yard-divider"></div>
+    <h4 style="margin:0 0 8px 0;">Pick activity</h4>
+    <p class="card-sub" style="margin-top:0;">Every time picks were saved for this member this week.</p>
+    ${activity.length===0?`<div class="card-sub">No saves recorded yet.</div>`:
+      activity.map(a=>`<div class="log-entry"><div class="log-ts">${fmtTs(new Date(a.ts).getTime())}</div>
+        <div class="log-desc">${a.pick_count} game${a.pick_count===1?"":"s"} picked${a.made_by && a.made_by!==AUDIT_USER?` — entered by ${esc(a.made_by)}`:""}</div></div>`).join("")}
+  `;
+  document.getElementById("audit-adj-save").onclick = async ()=>{
+    const amount = Number(document.getElementById("audit-adj-amount").value)||0;
+    const note = document.getElementById("audit-adj-note").value.trim();
+    await saveAdjustment(AUDIT_WEEK, AUDIT_USER, amount, note);
+    await addLog("Manual score adjustment", `${AUDIT_USER} — ${weekLabel(week)} — ${amount>0?"+":""}${amount}${note?` (${note})`:""}`);
+    document.getElementById("audit-adj-msg").textContent = "Saved.";
+    document.getElementById("audit-adj-msg").style.color = "var(--field)";
+  };
+}
+
+// ---------- Account ----------
+function renderAccountPage(main){
+  main.innerHTML = `
+    <div class="card">
+      <button class="link-btn" id="account-back-btn">← Back</button>
+      <h2 class="card-title" style="margin-top:10px;">Account</h2>
+      <p class="card-sub">Signed in as <strong>${esc(ME)}</strong></p>
+      <div class="yard-divider"></div>
+      <h4 style="margin:0 0 8px 0;">Change password</h4>
+      <div class="field"><label>Current password</label><input type="password" id="pw-current" autocomplete="off"></div>
+      <div class="field"><label>New password</label><input type="password" id="pw-new" autocomplete="off" minlength="4"></div>
+      <div class="field"><label>Confirm new password</label><input type="password" id="pw-confirm" autocomplete="off" minlength="4"></div>
+      <button class="btn gold sm" id="pw-save-btn" style="margin-top:10px;">Update password</button>
+      <div id="pw-msg" style="font-size:13px;margin-top:8px;"></div>
+      <div class="yard-divider"></div>
+      <button class="btn danger sm" id="logout-btn">Log out</button>
+    </div>`;
+  document.getElementById("account-back-btn").onclick = ()=>{ ROUTE="picks"; renderApp(); };
+  document.getElementById("logout-btn").onclick = ()=>{
+    if(confirm("Log out of BMAs?")){ ME=null; localDel("bmasUser"); render(); }
+  };
+  document.getElementById("pw-save-btn").onclick = async ()=>{
+    const msg = document.getElementById("pw-msg");
+    const current = document.getElementById("pw-current").value;
+    const next = document.getElementById("pw-new").value;
+    const confirmVal = document.getElementById("pw-confirm").value;
+    msg.style.color = "var(--red)";
+    if(!current || !next || !confirmVal){ msg.textContent = "Fill out every field."; return; }
+    if(next.length < 4){ msg.textContent = "New password needs to be at least 4 characters."; return; }
+    if(next !== confirmVal){ msg.textContent = "New passwords don't match."; return; }
+    const currentHash = await sha256(current);
+    if(currentHash !== STATE.users[ME].passHash){ msg.textContent = "Current password is wrong."; return; }
+    const newHash = await sha256(next);
+    try{
+      await sb("/rest/v1/bma_users?username=eq."+encodeURIComponent(ME), {method:"PATCH", prefer:"return=minimal", body: JSON.stringify({pass_hash:newHash})});
+      STATE.users[ME].passHash = newHash;
+      msg.style.color = "var(--field)";
+      msg.textContent = "Password updated.";
+      document.getElementById("pw-current").value = "";
+      document.getElementById("pw-new").value = "";
+      document.getElementById("pw-confirm").value = "";
+    }catch(e){
+      msg.textContent = "Couldn't reach the database — try again.";
+    }
+  };
+}
+
+// ---------- Owner ----------
+function renderOwnerPage(main){
+  const usernames=Object.keys(STATE.users);
+  main.innerHTML = `
+    <div class="card">
+      <h2 class="card-title">League Setup</h2>
+      <p class="card-sub">Owner controls — appoint who runs the weekly slate. Check as many as you want.</p>
+      <label>Commissioners</label>
+      <div id="commish-checks">
+        ${usernames.map(u=>`
+          <label style="display:flex;align-items:center;gap:8px;padding:7px 0;font-size:14px;font-weight:400;color:var(--text);margin:0;">
+            <input type="checkbox" style="width:auto;" data-commish-check value="${esc(u)}" ${STATE.commissioners.includes(u)?"checked":""}>
+            ${esc(u)}
+          </label>`).join("")}
+      </div>
+      <button class="btn sm" id="set-commish-btn" style="margin-top:10px;">Save commissioners</button>
+      <div class="yard-divider"></div>
+      <h4 style="margin:0 0 8px 0;">Members (${usernames.length})</h4>
+      ${usernames.map(u=>`<div style="padding:6px 0;font-size:14px;">${esc(u)} <span style="color:var(--text-dim);font-size:12px;">${u===STATE.owner?"· owner":""}${STATE.commissioners.includes(u)?" · commissioner":""}</span></div>`).join("")}
+    </div>`;
+  document.getElementById("set-commish-btn").onclick = async ()=>{
+    const checked = Array.from(document.querySelectorAll("[data-commish-check]:checked")).map(el=>el.value);
+    const before = STATE.commissioners;
+    await patchLeague({commissioners: checked});
+    STATE.commissioners = checked;
+    const added = checked.filter(u=>!before.includes(u));
+    const removed = before.filter(u=>!checked.includes(u));
+    let detail = [];
+    if(added.length) detail.push(`added ${added.join(", ")}`);
+    if(removed.length) detail.push(`removed ${removed.join(", ")}`);
+    await addLog("Commissioners updated", detail.length? detail.join(" · ") : "No change.");
+    renderOwnerPage(main);
+  };
+}
+
+// ---------- boot ----------
+async function boot(){
+  try{
+    await ensureLeagueRow();
+    await loadAll();
+  }catch(err){
+    LOADING=false;
+    app.innerHTML = `<div class="login-wrap"><div class="card login-card"><h2 class="card-title">Can't reach the database</h2><p class="card-sub">${esc(err.message||String(err))}</p><p style="font-size:13px;color:var(--text-dim);">Make sure the setup SQL has been run in Supabase and this page is served over https (GitHub Pages, not opened as a local file).</p></div></div>`;
+    return;
+  }
+  const saved = localGet("bmasUser");
+  if(saved && STATE.users[saved]) ME = saved;
+  LOADING = false;
+  render();
+}
+boot();
+
+})();
+</script>
+</body>
+</html>
+
+<!--
+============================== SETUP SQL ==============================
+Run this once in the Supabase SQL editor for your new BMAs project
+— Table Editor > SQL Editor > New query. Then paste that project's
+URL and anon key into the SB_URL / SB_KEY constants near the top
+of this file.
+
+create table if not exists bma_users (
+  username text primary key,
+  email text not null,
+  pass_hash text not null,
+  joined_at timestamptz default now()
+);
+
+create table if not exists bma_league (
+  id int primary key,
+  owner text,
+  commissioners jsonb default '[]'::jsonb,
+  current_week text
+);
+
+create table if not exists bma_weeks (
+  id text primary key,
+  sport text not null,
+  week_num int not null,
+  start_date date,
+  end_date date,
+  finalized boolean default false,
+  locked boolean default false,
+  created_at timestamptz default now()
+);
+
+create table if not exists bma_games (
+  id text primary key,
+  week_id text references bma_weeks(id) on delete cascade,
+  away text not null,
+  home text not null,
+  favorite text not null,
+  spread numeric not null default 0,
+  points numeric not null default 1,
+  kickoff timestamptz,
+  day_label text,
+  away_score numeric,
+  home_score numeric,
+  has_result boolean default false,
+  espn_id text
+);
+
+create table if not exists bma_picks (
+  week_id text not null,
+  username text not null,
+  picks jsonb not null default '{}'::jsonb,
+  updated_at timestamptz default now(),
+  primary key (week_id, username)
+);
+
+create table if not exists bma_log (
+  id bigserial primary key,
+  ts timestamptz default now(),
+  actor text,
+  action text,
+  detail text
+);
+
+create table if not exists bma_adjustments (
+  week_id text not null,
+  username text not null,
+  amount numeric not null default 0,
+  note text,
+  updated_at timestamptz default now(),
+  primary key (week_id, username)
+);
+
+create table if not exists bma_pick_activity (
+  id bigserial primary key,
+  week_id text not null,
+  username text not null,
+  ts timestamptz default now(),
+  pick_count int,
+  made_by text
+);
+
+-- Open access for the anon key (matches the golf pool pattern — fine for a
+-- private friends league; tighten with real policies if this ever needs to
+-- be public-safe against tampering).
+alter table bma_users disable row level security;
+alter table bma_league disable row level security;
+alter table bma_weeks disable row level security;
+alter table bma_games disable row level security;
+alter table bma_picks disable row level security;
+alter table bma_log disable row level security;
+alter table bma_adjustments disable row level security;
+alter table bma_pick_activity disable row level security;
+=========================================================================
+-->
